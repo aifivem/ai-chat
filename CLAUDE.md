@@ -7,7 +7,7 @@ Chat: channels from the admin panel (everyone, players nearby, a job), command s
 - Channels are panel records (`data/channels.json`, `sync: "all"`): range 0 = everyone (`-1`), a range = players within it, jobs = members only. The client shows only the channels its jobs allow; the server checks again.
 - Commands never reach the server as messages: a line starting with `/` runs `ExecuteCommand` on the client.
 - HTML templates are never drawn; colour codes `^0`-`^9` are spans. Author = character name.
-- Suggestions are a per-player delta of the server commands the player's ACE allows (`server/suggestions.ts`), refreshed when the screen loads and after resources start or stop.
+- Suggestions are a per-player delta of the server commands the player's ACE allows (`server/suggestions.ts`), refreshed when the screen loads and after resources start or stop. Lib `addCommand` sends its own described suggestions (`chat:addSuggestions`); the store never lets ai-chat's help-less entry replace a described one.
 - No database: messages are routed and forgotten; logs go through ai-core (channel `messages`).
 - The NUI draws nothing while hidden: it fades out `fadeSeconds` after the last message (one timeout, no interval).
 

@@ -46,7 +46,8 @@ const chat = createSlice({
     },
     suggestionsChanged(state, action: PayloadAction<{ add: Suggestion[]; remove: string[] }>) {
       for (const name of action.payload.remove) delete state.suggestions[name];
-      for (const s of action.payload.add) state.suggestions[s.name] = s;
+      // ai-chat's own list has no help text: it never replaces a script's described suggestion (lib addCommand).
+      for (const s of action.payload.add) if (s.help || !state.suggestions[s.name]?.help) state.suggestions[s.name] = s;
     },
     cleared(state) {
       state.lines = [];

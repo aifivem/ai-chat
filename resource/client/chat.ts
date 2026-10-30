@@ -72,7 +72,7 @@ export const chat = new Chat();
 content.subscribe(() => chat.resetup());
 onPlayerData("jobs", () => chat.resetup());
 
-new Keybind({ name: "chat_open_T", description: Locale("KEYBIND_OPEN"), defaultKey: "T", onPressed: () => chat.openInput() });
+new Keybind({ name: "chat_open", description: Locale("KEYBIND_OPEN"), defaultKey: "T", onPressed: () => chat.openInput() });
 
 type NuiReply = (r: unknown) => void;
 RegisterNuiCallback("ready", (_data: unknown, cb: NuiReply) => {
