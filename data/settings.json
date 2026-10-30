@@ -4,5 +4,5 @@
   "fadeSeconds": 8,
   "history": 100,
   "showJoins": false,
-  "noSlash": false
+  "noSlash": true
 }
