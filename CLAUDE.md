@@ -1,6 +1,6 @@
 # ai-chat
 
-Chat: channels from the admin panel (everyone, players nearby, a job), command suggestions, GTA colour codes, and FiveM's `chat` resource API (`provide 'chat'`) so every script's chat output works. Depends on ai-core (character names, jobs, admin panel). Research and decisions: `docs/research/ai-chat.md`, compat: `docs/compat/chat.md`.
+Chat: channels from the admin panel (everyone, players nearby, a job), command suggestions, GTA colour codes, and FiveM's `chat` resource API (`provide 'chat'`) so every script's chat output works. Depends on ai-core (character names, jobs, admin panel).
 
 ## Decisions
 
