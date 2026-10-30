@@ -1,11 +1,14 @@
-import { onServerEvent, provideExport, registerExport } from "@aicore-fivem/lib/client";
+import { fromServer, onServerEvent, provideExport, registerExport } from "@aicore-fivem/lib/client";
 import { EVENTS, toChatMessage, toSuggestion, type Suggestion } from "common/chat";
 import { chat } from "./chat";
 
-// The FiveM chat resource's events, from the server and from other client scripts alike.
+// The FiveM chat resource's events, from the server and from other client scripts alike. Once an event name is
+// net-safe every `on` handler of it also receives the server's calls, so the local one skips those (no doubles).
 const both = (name: string, handler: (...args: unknown[]) => void) => {
   onServerEvent(name, { args: (raw) => raw }, handler);
-  on(name, handler);
+  on(name, (...args: unknown[]) => {
+    if (!fromServer()) handler(...args);
+  });
 };
 both("chat:addMessage", (message) => chat.addMessage(toChatMessage(message)));
 both("chatMessage", (author, color, text) =>

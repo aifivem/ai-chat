@@ -653,7 +653,9 @@ try{
 // resource/client/events.ts
 	const both = (name, handler) => {
 		onServerEvent(name, { args: (raw) => raw }, handler);
-		on(name, handler);
+		on(name, (...args) => {
+			if (!fromServer()) handler(...args);
+		});
 	};
 	both("chat:addMessage", (message) => chat.addMessage(toChatMessage(message)));
 	both("chatMessage", (author, color, text) => chat.addMessage(toChatMessage({
