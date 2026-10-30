@@ -1,8 +1,6 @@
-import { aiLog, onClientEvent, resourceExport } from "@aicore-fivem/lib/server";
+import { aiLog, onClientEvent, online, playersNear } from "@aicore-fivem/lib/server";
 import { EVENTS, type Channel, type ChatMessage } from "common/chat";
 import { content } from "./content";
-
-const core = resourceExport("ai-core");
 
 /** What a message hook (cfx `registerMessageHook`) may do to a message before it goes out. */
 export interface HookRef {
@@ -33,23 +31,19 @@ on("onResourceStop", (resource: string) => {
   for (const [name, mode] of modes) if (mode.resource === resource) modes.delete(name);
 });
 
-const inJobs = (source: number, jobs: string[]): boolean => jobs.length === 0 || (core.GetJobs(source) ?? []).some((m) => jobs.includes(m.job));
+const inJobs = (source: number, jobs: string[]): boolean => jobs.length === 0 || online.jobs(source).some((job) => jobs.includes(job));
 
 function authorOf(source: number): string {
-  const character = core.GetCharacter(source);
+  const character = online.character(source);
   return character ? `${character.firstname} ${character.lastname}` : GetPlayerName(String(source));
 }
 
 /** Who reads a panel channel: everyone, the players within its range of the sender, or its jobs. */
 function recipients(source: number, channel: Channel): number | number[] {
   if (channel.range === 0 && channel.jobs.length === 0) return -1;
-  const [x = 0, y = 0, z = 0] = GetEntityCoords(GetPlayerPed(String(source)));
-  return core.GetLoadedSources().filter((target) => {
-    if (!inJobs(target, channel.jobs)) return false;
-    if (channel.range === 0) return true;
-    const [tx = 0, ty = 0, tz = 0] = GetEntityCoords(GetPlayerPed(String(target)));
-    return Math.hypot(tx - x, ty - y, tz - z) <= channel.range;
-  });
+  // A ranged channel measures only the players in the sender's scope, not everyone online.
+  const pool = channel.range === 0 ? [...online.sources()] : playersNear(source, channel.range);
+  return pool.filter((target) => inJobs(target, channel.jobs));
 }
 
 /** Removes control characters and colour-code abuse is left to the screen (it draws `^n` safely). */
