@@ -1,4 +1,4 @@
-import { bool, int, record, str } from "@aicore-fivem/lib/shared";
+import { bool, int, isRecord, record, str } from "@aicore-fivem/lib/shared";
 
 /** ai-chat's contracts: events, messages, suggestions, panel content. No natives. */
 
@@ -114,13 +114,10 @@ export class ChatContent {
   }
 }
 
-const isObj = (v: unknown): v is Record<string, unknown> =>
-  typeof v === "object" && v !== null && !Array.isArray(v);
-
 /** A message from any script (cfx shape, a plain string, or garbage): only the parts the screen draws survive. */
 export function toChatMessage(v: unknown): ChatMessage | null {
   if (typeof v === "string") return { args: [v.slice(0, 2000)] };
-  if (!isObj(v)) return null;
+  if (!isRecord(v)) return null;
   const args = Array.isArray(v.args)
     ? v.args.map((a) => String(a ?? "").slice(0, 2000))
     : [];
@@ -142,10 +139,10 @@ export function toChatMessage(v: unknown): ChatMessage | null {
 }
 
 export function toSuggestion(v: unknown): Suggestion | null {
-  if (!isObj(v) || typeof v.name !== "string") return null;
+  if (!isRecord(v) || typeof v.name !== "string") return null;
   const params = Array.isArray(v.params)
     ? v.params.flatMap((p) =>
-        isObj(p) && typeof p.name === "string"
+        isRecord(p) && typeof p.name === "string"
           ? [{ name: p.name, help: typeof p.help === "string" ? p.help : "" }]
           : [],
       )

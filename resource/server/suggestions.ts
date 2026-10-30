@@ -1,4 +1,4 @@
-import { onClientEvent } from "@aicore-fivem/lib/server";
+import { onClientEvent, PlayerMap } from "@aicore-fivem/lib/server";
 import { EVENTS, type Suggestion } from "common/chat";
 
 /**
@@ -6,7 +6,7 @@ import { EVENTS, type Suggestion } from "common/chat";
  * gone) when the screen loads and again after resources start or stop (debounced).
  */
 class Suggestions {
-  private readonly sent = new Map<number, Set<string>>();
+  private readonly sent = new PlayerMap<Set<string>>();
   private timer: ReturnType<typeof setTimeout> | null = null;
 
   refresh(player: number): void {
@@ -36,10 +36,6 @@ class Suggestions {
       for (const player of this.sent.keys()) this.refresh(player);
     }, 1000);
   }
-
-  forget(player: number): void {
-    this.sent.delete(player);
-  }
 }
 
 export const suggestions = new Suggestions();
@@ -49,4 +45,3 @@ onClientEvent(EVENTS.ready, (source) => suggestions.refresh(source), {
 });
 on("onServerResourceStart", () => suggestions.refreshAll());
 on("onResourceStop", () => suggestions.refreshAll());
-on("playerDropped", () => suggestions.forget(Number(globalThis.source)));

@@ -214,7 +214,7 @@ const CORE = {
 	clientPlayerLoadedEvent: "ai-core:client:playerLoaded",
 	clientPlayerUnloadedEvent: "ai-core:client:playerUnloaded",
 	clientCharacterPortraitEvent: "ai-core:client:characterPortrait",
-	clientCharacterLookEvent: "ai-core:client:characterLook",
+	characterLooksEvent: "ai-core:client:characterLooks",
 	clientPromptPressedEvent: "ai-core:client:promptPressed",
 	clientCacheEvent: "ai-core:client:cache",
 	clientHudVisibleEvent: "ai-core:client:hudVisible",
@@ -397,7 +397,7 @@ function toPatch(value) {
 		default: return null;
 	}
 }
-const clone = (value) => value === void 0 ? value : JSON.parse(JSON.stringify(value)), core$13 = resourceExport(CORE.resource), ERR = {
+const clone = (value) => value === void 0 ? value : JSON.parse(JSON.stringify(value)), core$14 = resourceExport(CORE.resource), ERR = {
 	type: "ADMIN_ERR_TYPE",
 	range: "ADMIN_ERR_RANGE",
 	length: "ADMIN_ERR_LENGTH",
@@ -411,7 +411,7 @@ const clone = (value) => value === void 0 ? value : JSON.parse(JSON.stringify(va
 		if (cached && Date.now() - cached.at < 2e3) return cached.values.size > 0 ? cached.values : null;
 		let list = [];
 		try {
-			list = core$13.GetLookupValues(source);
+			list = core$14.GetLookupValues(source);
 		} catch {}
 		let values = new Set(Array.isArray(list) ? list.filter((v) => typeof v == "string") : []);
 		return this.lists.set(source, {
@@ -614,7 +614,7 @@ function writeSchema(resource, name, text, log) {
 	(0, node_fs_promises.mkdir)(dir, { recursive: !0 }).then(() => (0, node_fs_promises.writeFile)(`${dir}/${name}.schema.json`, text, "utf8")).catch((error) => log.error(`writing ${resource}/${path} failed`, error));
 }
 // ../../../packages/lib/src/server/admin/panel.ts
-const core$12 = resourceExport(CORE.resource), DEFAULT_KEY = "^[a-z0-9_]{2,32}$";
+const core$13 = resourceExport(CORE.resource), DEFAULT_KEY = "^[a-z0-9_]{2,32}$";
 function imported(spec, value) {
 	let base = clone(spec.newRecord ?? {}), out = {};
 	for (let name of Object.keys(spec.sections)) {
@@ -638,7 +638,7 @@ var AdminPanel = class {
 	constructor(schema) {
 		this.schema = schema;
 		for (let [name, spec] of Object.entries(schema.files)) this.load(name, spec);
-		registerExport("AdminPanelSnapshot", () => this.snapshot()), registerExport("AdminPanelApply", (admin, patch) => this.apply(admin, patch)), onClientCallback(ADMIN.worldChangesCallback(this.resource), () => Object.fromEntries(this.worldChanges)), setImmediate(() => core$12.RegisterAdminPanel(this.resource));
+		registerExport("AdminPanelSnapshot", () => this.snapshot()), registerExport("AdminPanelApply", (admin, patch) => this.apply(admin, patch)), onClientCallback(ADMIN.worldChangesCallback(this.resource), () => Object.fromEntries(this.worldChanges)), setImmediate(() => core$13.RegisterAdminPanel(this.resource));
 	}
 	get(file) {
 		return this.data.get(file) ?? {};
@@ -772,7 +772,7 @@ var AdminPanel = class {
 		let spec = this.schema.files[file], data = this.get(file), value = key === void 0 ? data : data[key] ?? null;
 		this.dataFiles.get(file)?.write(data), this.views.changed(file, key, value);
 		for (let handler of this.handlers.get(file) ?? []) handler(key, value);
-		if (core$12.AdminPanelChanged({
+		if (core$13.AdminPanelChanged({
 			resource: this.resource,
 			file,
 			key,
@@ -802,7 +802,7 @@ function aiLogChannels(channels) {
 }
 resourceExport(CORE.resource);
 // ../../../packages/lib/src/server/online.ts
-const core$10 = resourceExport(CORE.resource);
+const core$11 = resourceExport(CORE.resource);
 var OnlinePlayers = class {
 	players = new Map();
 	onDuty = new Map();
@@ -811,7 +811,7 @@ var OnlinePlayers = class {
 		if (this.started) return;
 		this.started = !0;
 		let load = (source, character) => {
-			this.put(source, character, (core$10.GetJobs(source) ?? []).map((m) => m.job), (core$10.GetGangs(source) ?? []).map((m) => m.gang)), this.setDuty(source, core$10.GetDutyJob(source));
+			this.put(source, character, (core$11.GetJobs(source) ?? []).map((m) => m.job), (core$11.GetGangs(source) ?? []).map((m) => m.gang)), this.setDuty(source, core$11.GetDutyJob(source));
 		};
 		on(CORE.playerLoadedEvent, load), on(CORE.playerUnloadedEvent, (source) => this.drop(source)), on(CORE.jobsChangedEvent, (source, jobs) => {
 			let player = this.players.get(source);
@@ -820,8 +820,8 @@ var OnlinePlayers = class {
 			let player = this.players.get(source);
 			player && (player.gangs = gangs.map((m) => m.gang));
 		}), on(CORE.dutyChangedEvent, (source, job) => this.setDuty(source, job));
-		for (let source of core$10.GetLoadedSources()) {
-			let character = core$10.GetCharacter(source);
+		for (let source of core$11.GetLoadedSources()) {
+			let character = core$11.GetCharacter(source);
 			character && load(source, character);
 		}
 	}
@@ -867,7 +867,7 @@ var OnlinePlayers = class {
 const EMPTY = new Set(), online = new OnlinePlayers();
 resourceExport(CORE.resource);
 // ../../../packages/lib/src/server/proximity.ts
-const core$8 = resourceExport(CORE.resource);
+const core$9 = resourceExport(CORE.resource);
 function within(point, radius, candidates) {
 	let out = [];
 	for (let source of candidates) {
@@ -877,9 +877,26 @@ function within(point, radius, candidates) {
 	return out;
 }
 function playersNear(source, radius) {
-	return within(coordsOf(source), radius, [source, ...core$8.GetPlayersInScope(source)]);
+	return within(coordsOf(source), radius, [source, ...core$9.GetPlayersInScope(source)]);
 }
 createLogger(GetCurrentResourceName());
+const dropped = new Set();
+let listening = !1;
+function onDropped(fn) {
+	listening || (listening = !0, on("playerDropped", () => {
+		let source = Number(globalThis.source);
+		for (let handler of dropped) handler(source);
+	})), dropped.add(fn);
+}
+var PlayerMap = class extends Map {
+	constructor(options = {}) {
+		super(), onDropped((source) => {
+			if (!this.has(source)) return;
+			let value = this.get(source);
+			this.delete(source), options.onDrop?.(source, value);
+		});
+	}
+};
 // ../../../packages/lib/src/server/command.ts
 const resource = GetCurrentResourceName();
 createLogger(resource), new class {
@@ -917,7 +934,7 @@ function onClientEvent(name, first, second) {
 		args && gate.run(source, void 0, () => handler(source, ...args)).catch((error) => log$1.error(`event ${name} failed for ${source}`, error));
 	});
 }
-createLogger("aicore-lib"), IsDuplicityVersion(), resourceExport(CORE.resource), resourceExport(CORE.resource), resourceExport(CORE.resource), resourceExport(CORE.resource), resourceExport(CORE.resource), resourceExport(CORE.resource), resourceExport(CORE.resource), resourceExport(CORE.resource);
+createLogger("aicore-lib"), IsDuplicityVersion(), resourceExport(CORE.resource), resourceExport(CORE.resource), resourceExport(CORE.resource), resourceExport(CORE.resource), resourceExport(CORE.resource), resourceExport(CORE.resource), resourceExport(CORE.resource), resourceExport(CORE.resource), resourceExport(CORE.resource);
 // resource/common/locale.ts
 const Locale = createLocale();
 GetCurrentResourceName(), IsDuplicityVersion();
@@ -968,10 +985,9 @@ var ChatContent = class {
 		for (let listener of this.listeners) listener();
 	}
 };
-const isObj = (v) => typeof v == "object" && !!v && !Array.isArray(v);
 function toChatMessage(v) {
 	if (typeof v == "string") return { args: [v.slice(0, 2e3)] };
-	if (!isObj(v)) return null;
+	if (!isRecord(v)) return null;
 	let args = Array.isArray(v.args) ? v.args.map((a) => String(a ?? "").slice(0, 2e3)) : [];
 	if (args.length === 0) return null;
 	let c = v.color;
@@ -1185,7 +1201,11 @@ function authorOf(source) {
 	return character ? `${character.firstname} ${character.lastname}` : GetPlayerName(String(source));
 }
 function recipients(source, channel) {
-	return channel.range === 0 && channel.jobs.length === 0 ? -1 : (channel.range === 0 ? [...online.sources()] : playersNear(source, channel.range)).filter((target) => inJobs(target, channel.jobs));
+	if (channel.range === 0 && channel.jobs.length === 0) return -1;
+	if (channel.range > 0) return playersNear(source, channel.range).filter((target) => inJobs(target, channel.jobs));
+	let out = [];
+	for (let target of online.sources()) inJobs(target, channel.jobs) && out.push(target);
+	return out;
 }
 const clean = (text, max) => text.replace(/[\u0000-\u001f\u007f]/g, "").trim().slice(0, max);
 function deliver(target, message) {
@@ -1222,7 +1242,7 @@ onClientEvent(EVENTS.send, {
 	})));
 });
 const suggestions = new class {
-	sent = new Map();
+	sent = new PlayerMap();
 	timer = null;
 	refresh(player) {
 		let allowed = new Set();
@@ -1239,14 +1259,11 @@ const suggestions = new class {
 			for (let player of this.sent.keys()) this.refresh(player);
 		}, 1e3);
 	}
-	forget(player) {
-		this.sent.delete(player);
-	}
 }();
 onClientEvent(EVENTS.ready, (source) => suggestions.refresh(source), { rate: {
 	count: 2,
 	windowMs: 1e4
-} }), on("onServerResourceStart", () => suggestions.refreshAll()), on("onResourceStop", () => suggestions.refreshAll()), on("playerDropped", () => suggestions.forget(Number(globalThis.source)));
+} }), on("onServerResourceStart", () => suggestions.refreshAll()), on("onResourceStop", () => suggestions.refreshAll());
 // resource/server/exports.ts
 const api = {
 	addMessage: (target, message) => {

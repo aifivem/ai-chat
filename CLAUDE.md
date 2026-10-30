@@ -4,7 +4,7 @@ Chat: channels from the admin panel (everyone, players nearby, a job), command s
 
 ## Decisions
 
-- Channels are panel records (`data/channels.json`, `sync: "all"`): range 0 = everyone (`-1`), a range = players within it, jobs = members only. The client shows only the channels its jobs allow; the server checks again.
+- Channels are panel records (`data/channels.json`, `sync: "all"`): range 0 = everyone (`-1`), a range = players within it, jobs = members only. The client shows only the channels its jobs allow; the server checks again. Recipients: a ranged channel measures only the sender's scope candidates (lib `playersNear`); a job channel walks lib `online`'s mirror (memory reads; lib `online` keeps no member set per job, only on-duty sets).
 - Commands never reach the server as messages: a line starting with `/` runs `ExecuteCommand` on the client.
 - Panel setting "Commands without /" (`noSlash`): the input opens in a Command mode where the bare command is typed; Tab cycles Command and the channels (tgiann-chat style). Up / Down walk the sent lines while the input is empty (or showing one), otherwise the suggestion rows; Tab completes the picked row while the command word is typed.
 - HTML templates are never drawn; colour codes `^0`-`^9` are spans. Author = character name.

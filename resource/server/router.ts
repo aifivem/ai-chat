@@ -56,11 +56,15 @@ function authorOf(source: number): string {
 function recipients(source: number, channel: Channel): number | number[] {
   if (channel.range === 0 && channel.jobs.length === 0) return -1;
   // A ranged channel measures only the players in the sender's scope, not everyone online.
-  const pool =
-    channel.range === 0
-      ? [...online.sources()]
-      : playersNear(source, channel.range);
-  return pool.filter((target) => inJobs(target, channel.jobs));
+  if (channel.range > 0)
+    return playersNear(source, channel.range).filter((target) =>
+      inJobs(target, channel.jobs),
+    );
+  // A job channel: lib `online` keeps no member set per job, so its mirror is walked (memory reads, no export).
+  const out: number[] = [];
+  for (const target of online.sources())
+    if (inJobs(target, channel.jobs)) out.push(target);
+  return out;
 }
 
 /** Removes control characters and colour-code abuse is left to the screen (it draws `^n` safely). */
