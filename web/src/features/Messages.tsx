@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef } from "react";
+import { memo, useEffect, useRef, type ReactNode } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { Channel, ChatMessage } from "../../../resource/common/chat";
 import { useAppSelector, type Line } from "../store/chat";
@@ -28,21 +28,27 @@ function Colored({ text, base }: { text: string; base?: string }) {
 
 const cssColor = (c: ChatMessage["color"]): string | undefined => (Array.isArray(c) ? `rgb(${c[0]}, ${c[1]}, ${c[2]})` : c);
 
+/** A filled tag (tgiann-chat `.tag`): the colour as background, dark text. */
+function Tag({ color, children }: { color: string; children: ReactNode }) {
+  return (
+    <span className="mr-[0.4vh] inline rounded-[0.3vh] px-[0.6vh] py-[0.1vh] text-[1.2vh] font-bold text-tgi-green-text [text-shadow:none]" style={{ backgroundColor: color }}>
+      {children}
+    </span>
+  );
+}
+
 const MessageLine = memo(function MessageLine({ message, channel }: { message: ChatMessage; channel: Channel | undefined }) {
   const [author, ...rest] = message.args.length > 1 ? message.args : ["", ...message.args];
+  const color = cssColor(message.color) ?? channel?.color;
   return (
-    <p className={`px-[1.2vh] py-[0.35vh] text-[1.4vh] leading-[1.45] text-text-2 [text-shadow:0_0.1vh_0.3vh_rgba(0,0,0,0.6)] ${message.multiline ? "whitespace-pre-wrap" : ""}`}>
-      {channel && (
-        <span className="mr-[0.6vh] rounded-[0.4vh] border px-[0.5vh] text-[1.1vh] font-semibold uppercase tracking-[0.08em]" style={{ color: channel.color, borderColor: channel.color }}>
-          {channel.label}
-        </span>
-      )}
+    <p className={`py-[0.4vh] text-[1.4vh] leading-[1.4] break-words text-text [text-shadow:0_0.1vh_0_rgb(0,0,0)] ${message.multiline ? "whitespace-pre-wrap" : ""}`}>
+      {channel && <Tag color={channel.color}>{channel.label}</Tag>}
       {author && (
-        <span className="mr-[0.6vh] font-semibold" style={{ color: cssColor(message.color) ?? "var(--text)" }}>
-          <Colored text={author} />:
-        </span>
+        <Tag color={color ?? "var(--green)"}>
+          <Colored text={author} />
+        </Tag>
       )}
-      <Colored text={rest.join(" ")} />
+      <Colored text={rest.join(" ")} base={color} />
     </p>
   );
 });
@@ -70,7 +76,7 @@ export function Messages() {
   }, [lines.length, virtualizer]);
 
   return (
-    <div ref={ref} className="h-[30vh] overflow-y-auto">
+    <div ref={ref} className="h-[30vh] overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-[0.3vh] [&::-webkit-scrollbar-thumb]:bg-tgi-green">
       <div className="relative w-full" style={{ height: virtualizer.getTotalSize() }}>
         {virtualizer.getVirtualItems().map((row) => {
           const line: Line | undefined = lines[row.index];

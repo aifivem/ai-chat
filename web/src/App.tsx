@@ -54,7 +54,9 @@ export function App() {
   const visible = inputOpen || Date.now() - lastAt < fade * 1000;
   return (
     <div className={`fixed left-[2.4vh] top-[4vh] flex w-[56vh] flex-col gap-[0.8vh] transition-opacity duration-300 ${visible ? "opacity-100" : "pointer-events-none opacity-0"}`}>
-      <div className={`rounded-[1vh] transition-colors duration-200 ${inputOpen ? "border border-line bg-[rgba(var(--panel-rgb),0.85)]" : "border border-transparent"}`}>
+      {/* Soft dark patch behind the lines (tgiann-chat ChatBg): keeps white text readable over a bright game. */}
+      <div className="pointer-events-none absolute -inset-[4vh] bottom-auto h-[44vh] [background:radial-gradient(ellipse_75%_65%_at_25%_40%,rgba(0,0,0,0.6)_0%,rgba(0,0,0,0)_100%)]" />
+      <div className="relative">
         <Messages />
       </div>
       {inputOpen && <Input />}

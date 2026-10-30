@@ -5,13 +5,13 @@ import type { Channel, ChatMessage } from "../../../resource/common/chat";
 /** Browser preview only (`bun run webdev`): `?input=1` opens the input with `/` typed suggestions. */
 const CHANNELS: Channel[] = [
   { id: "local", label: "Local", color: "#ffffff", range: 20, jobs: [], order: 0 },
-  { id: "ooc", label: "OOC", color: "#7d8a8e", range: 0, jobs: [], order: 1 },
+  { id: "ooc", label: "OOC", color: "#f5b742", range: 0, jobs: [], order: 1 },
   { id: "police", label: "Police", color: "#4a8cff", range: 0, jobs: ["police"], order: 2 },
 ];
 export const MOCK_SETUP = { texts: en, settings, channels: CHANNELS };
 export const MOCK_MESSAGES: ChatMessage[] = [
   { args: ["Jamie Cole", "anyone at the 24/7 on Innocence?"], color: "#ffffff", channel: "local" },
-  { args: ["Ray Ortiz", "on my way ^2(2 min)"], color: "#7d8a8e", channel: "ooc" },
+  { args: ["Ray Ortiz", "on my way ^2(2 min)"], color: "#f5b742", channel: "ooc" },
   { args: ["Dispatch", "10-31 at Legion Square, units respond"], color: "#4a8cff", channel: "police" },
   { args: ["^3[Server] ^7Restart in 30 minutes."] },
 ];

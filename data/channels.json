@@ -1,5 +1,5 @@
 {
   "local": { "label": "Local", "color": "#ffffff", "range": 20, "jobs": [], "order": 0 },
-  "ooc": { "label": "OOC", "color": "#7d8a8e", "range": 0, "jobs": [], "order": 1 },
+  "ooc": { "label": "OOC", "color": "#f5b742", "range": 0, "jobs": [], "order": 1 },
   "police": { "label": "Police", "color": "#4a8cff", "range": 0, "jobs": ["police"], "order": 2 }
 }
