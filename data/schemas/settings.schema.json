@@ -28,6 +28,10 @@
     "showJoins": {
       "description": "Join and leave messages: Tells everyone when a player joins or leaves.",
       "type": "boolean"
+    },
+    "noSlash": {
+      "description": "Commands without /: The input opens in Command mode: players type a command without the slash. Tab moves through Command and the channels; a line starting with / still runs as a command in any channel.",
+      "type": "boolean"
     }
   },
   "required": [
