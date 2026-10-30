@@ -1,6 +1,8 @@
 import {
   AdminWorld,
+  every,
   getPlayerData,
+  type Job,
   Keybind,
   loadLocaleTexts,
   onPlayerData,
@@ -26,7 +28,7 @@ class Chat {
   private queue: NuiMessage[] = [];
   private readonly scriptModes = new Map<string, Channel>();
   private inputOpen = false;
-  private focusWatch: ReturnType<typeof setInterval> | null = null;
+  private focusWatch: Job | null = null;
 
   send(message: NuiMessage): void {
     if (this.ready) SendNUIMessage(message);
@@ -93,16 +95,16 @@ class Chat {
     this.send({ action: "openInput", data: null });
     // Another resource may drop the NUI focus while the input shows: the input closes with it instead of staying
     // on screen without the keyboard.
-    this.focusWatch ??= setInterval(() => {
+    this.focusWatch ??= every(250, () => {
       if (IsNuiFocused()) return;
       this.send({ action: "closeInput", data: null });
       this.closeInput();
-    }, 250);
+    });
   }
 
   closeInput(): void {
     this.inputOpen = false;
-    if (this.focusWatch) clearInterval(this.focusWatch);
+    this.focusWatch?.stop();
     this.focusWatch = null;
     SetNuiFocus(false, false);
   }

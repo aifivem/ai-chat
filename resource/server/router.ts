@@ -60,11 +60,11 @@ function recipients(source: number, channel: Channel): number | number[] {
     return playersNear(source, channel.range).filter((target) =>
       inJobs(target, channel.jobs),
     );
-  // A job channel: lib `online` keeps no member set per job, so its mirror is walked (memory reads, no export).
-  const out: number[] = [];
-  for (const target of online.sources())
-    if (inJobs(target, channel.jobs)) out.push(target);
-  return out;
+  // A job channel: the members of its jobs from lib `online`'s member sets (O(members), a set drops doubles).
+  const out = new Set<number>();
+  for (const job of channel.jobs)
+    for (const target of online.jobMembers(job)) out.add(target);
+  return [...out];
 }
 
 /** Removes control characters and colour-code abuse is left to the screen (it draws `^n` safely). */
