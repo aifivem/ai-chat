@@ -27,7 +27,13 @@ interface ChatState {
 }
 
 const initialState: ChatState = {
-  settings: { maxLength: 256, fadeSeconds: 8, history: 100, showJoins: false },
+  settings: {
+    maxLength: 256,
+    fadeSeconds: 8,
+    history: 100,
+    showJoins: false,
+    noSlash: false,
+  },
   channels: [],
   lines: [],
   suggestions: {},

@@ -13,7 +13,9 @@ export const chatSchema: PanelSchema = {
         fadeSeconds: { type: "number", min: 2, max: 60, integer: true },
         history: { type: "number", min: 20, max: 500, integer: true },
         showJoins: { type: "bool" },
+        noSlash: { type: "bool" },
       },
+      defaults: { noSlash: false },
     },
     channels: {
       kind: "records",
@@ -136,6 +138,12 @@ export const chatSchema: PanelSchema = {
               path: "showJoins",
               label: "ADMIN_F_JOINS",
               hint: "ADMIN_H_JOINS",
+            },
+            {
+              widget: "switch",
+              path: "noSlash",
+              label: "ADMIN_F_NO_SLASH",
+              hint: "ADMIN_H_NO_SLASH",
             },
           ],
         },

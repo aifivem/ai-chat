@@ -35,6 +35,8 @@ export interface Settings {
   /** Messages kept on the client. */
   history: number;
   showJoins: boolean;
+  /** Commands without "/": a Command mode comes first in the Tab cycle and takes the bare command. */
+  noSlash: boolean;
 }
 
 export interface Channel {
@@ -56,6 +58,7 @@ export function readSettings(raw: unknown): Settings {
     fadeSeconds: int(s.fadeSeconds, 8, 2, 60),
     history: int(s.history, 100, 20, 500),
     showJoins: bool(s.showJoins, false),
+    noSlash: bool(s.noSlash, false),
   };
 }
 

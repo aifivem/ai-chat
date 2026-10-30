@@ -777,7 +777,8 @@ function readSettings(raw) {
 		maxLength: int(s.maxLength, 256, 16, 1e3),
 		fadeSeconds: int(s.fadeSeconds, 8, 2, 60),
 		history: int(s.history, 100, 20, 500),
-		showJoins: bool(s.showJoins, !1)
+		showJoins: bool(s.showJoins, !1),
+		noSlash: bool(s.noSlash, !1)
 	};
 }
 function readChannels(raw) {
@@ -855,8 +856,10 @@ const content = new ChatContent(new AdminPanel({
 					max: 500,
 					integer: !0
 				},
-				showJoins: { type: "bool" }
-			}
+				showJoins: { type: "bool" },
+				noSlash: { type: "bool" }
+			},
+			defaults: { noSlash: !1 }
 		},
 		channels: {
 			kind: "records",
@@ -999,6 +1002,12 @@ const content = new ChatContent(new AdminPanel({
 					path: "showJoins",
 					label: "ADMIN_F_JOINS",
 					hint: "ADMIN_H_JOINS"
+				},
+				{
+					widget: "switch",
+					path: "noSlash",
+					label: "ADMIN_F_NO_SLASH",
+					hint: "ADMIN_H_NO_SLASH"
 				}
 			]
 		}]

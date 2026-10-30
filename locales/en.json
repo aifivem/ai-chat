@@ -3,7 +3,7 @@
   "MSG_JOINED": "{0} joined.",
   "MSG_LEFT": "{0} left ({1}).",
   "UI_PLACEHOLDER": "Write a message, / for commands",
-  "UI_CHANNEL_HINT": "Tab switches the channel",
+  "UI_CHANNEL_HINT": "Tab switches the mode",
   "UI_SUGGESTIONS": "Commands",
   "ADMIN_TITLE": "Chat",
   "ADMIN_TAB_CHANNELS": "Channels",
@@ -36,5 +36,9 @@
   "ADMIN_P_LABEL": "OOC",
   "ADMIN_P_COLOR": "#36ff9f",
   "ADMIN_P_JOBS": "police",
-  "ADMIN_U_CHARS": "chars"
+  "ADMIN_U_CHARS": "chars",
+  "ADMIN_F_NO_SLASH": "Commands without /",
+  "ADMIN_H_NO_SLASH": "The input opens in Command mode: players type a command without the slash. Tab moves through Command and the channels; a line starting with / still runs as a command in any channel.",
+  "UI_COMMAND": "Command",
+  "UI_PLACEHOLDER_COMMAND": "Write a command without /"
 }
