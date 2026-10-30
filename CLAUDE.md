@@ -19,6 +19,7 @@ Chat: channels from the admin panel (everyone, players nearby, a job), command s
 
 ## Pitfalls
 
+- Enter on a suggestion that is not typed out yet takes it (like Tab); Enter on a complete line sends.
 - NUI focus is global: another resource can drop it while the input shows. The client checks `IsNuiFocused()` every 250 ms only while the input is open and closes the input with it; the NUI also closes on Escape when the text field lost the DOM focus and takes the focus back on blur.
 
 - The chat events come from the server and from other client scripts: each is registered with `onServerEvent` (net, server only) and `on` (local) in `client/events.ts`.

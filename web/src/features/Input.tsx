@@ -131,7 +131,14 @@ export function Input() {
             setHistoryIndex(-1);
           }}
           onKeyDown={(e) => {
-            if (e.key === "Enter") return submit();
+            if (e.key === "Enter") {
+              // On a suggestion that is not typed out yet, Enter takes it (like Tab); otherwise it sends.
+              const name = matches[picked]?.name;
+              const typed = command?.split(" ")[0]?.toLowerCase();
+              if (completing && name && name.toLowerCase() !== typed)
+                return complete();
+              return submit();
+            }
             if (e.key === "Escape") return close();
             if (e.key === "Tab") {
               e.preventDefault();
