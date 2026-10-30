@@ -11,7 +11,7 @@
   "ADMIN_TAB_SETTINGS": "Settings",
   "ADMIN_TAB_SETTINGS_DESC": "Message length, how long the chat stays on screen, join messages.",
   "ADMIN_NEW_CHANNEL": "New channel",
-  "ADMIN_DELETE_CHANNEL": "Delete this channel?",
+  "ADMIN_DELETE_CHANNEL": "Delete channel",
   "ADMIN_C_CHANNEL": "Channel",
   "ADMIN_C_CHANNEL_DESC": "Who reads what is written here.",
   "ADMIN_C_MESSAGES": "Messages",
