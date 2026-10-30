@@ -45,12 +45,7 @@ on("onResourceStop", (resource: string) => {
 const inJobs = (source: number, jobs: string[]): boolean =>
   jobs.length === 0 || online.jobs(source).some((job) => jobs.includes(job));
 
-function authorOf(source: number): string {
-  const character = online.character(source);
-  return character
-    ? `${character.firstname} ${character.lastname}`
-    : GetPlayerName(String(source));
-}
+const authorOf = (source: number): string => online.name(source);
 
 /** Who reads a panel channel: everyone, the players within its range of the sender, or its jobs. */
 function recipients(source: number, channel: Channel): number | number[] {
