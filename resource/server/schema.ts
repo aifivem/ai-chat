@@ -1,4 +1,4 @@
-import type { PanelSchema } from "@aicore-fivem/shared"
+import type { PanelSchema } from "@aicore-fivem/shared";
 
 /** ai-chat's panel: message rules and the channels players write in. */
 export const chatSchema: PanelSchema = {
@@ -142,4 +142,4 @@ export const chatSchema: PanelSchema = {
       ],
     },
   ],
-}
+};

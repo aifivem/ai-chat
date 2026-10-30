@@ -1,15 +1,15 @@
-import { useEffect, useMemo, useRef, useState } from "react"
-import { fetchNui } from "fivem-nui-react"
-import { useLang } from "../lib/lang"
-import { inputSet, store, useAppSelector } from "../store/chat"
+import { useEffect, useMemo, useRef, useState } from "react";
+import { fetchNui } from "fivem-nui-react";
+import { useLang } from "../lib/lang";
+import { inputSet, store, useAppSelector } from "../store/chat";
 
-const OK = { mockData: { ok: true } }
+const OK = { mockData: { ok: true } };
 /** Sent lines for Up / Down, newest last; screen-local. */
-const sentHistory: string[] = []
+const sentHistory: string[] = [];
 
 function close(): void {
-  store.dispatch(inputSet(false))
-  void fetchNui("close", undefined, OK)
+  store.dispatch(inputSet(false));
+  void fetchNui("close", undefined, OK);
 }
 
 /** A key name in a small grey cap (tgiann-chat KeyHint). */
@@ -18,43 +18,43 @@ function KeyCap({ children }: { children: string }) {
     <span className="flex h-[2vh] min-w-[2vh] items-center justify-center rounded-[0.4vh] bg-white/10 px-[0.5vh] text-[1.1vh] leading-none font-medium text-text-3">
       {children}
     </span>
-  )
+  );
 }
 
 /** The input row: channel tag (Tab switches), text, command suggestions under it while typing `/`. */
 export function Input() {
-  const t = useLang()
-  const channels = useAppSelector((s) => s.chat.channels)
-  const suggestions = useAppSelector((s) => s.chat.suggestions)
-  const maxLength = useAppSelector((s) => s.chat.settings.maxLength)
-  const [text, setText] = useState("")
-  const [channelIndex, setChannelIndex] = useState(0)
-  const [historyIndex, setHistoryIndex] = useState(-1)
-  const ref = useRef<HTMLInputElement>(null)
-  const channel = channels[channelIndex % Math.max(1, channels.length)]
+  const t = useLang();
+  const channels = useAppSelector((s) => s.chat.channels);
+  const suggestions = useAppSelector((s) => s.chat.suggestions);
+  const maxLength = useAppSelector((s) => s.chat.settings.maxLength);
+  const [text, setText] = useState("");
+  const [channelIndex, setChannelIndex] = useState(0);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const ref = useRef<HTMLInputElement>(null);
+  const channel = channels[channelIndex % Math.max(1, channels.length)];
 
-  useEffect(() => ref.current?.focus(), [])
+  useEffect(() => ref.current?.focus(), []);
 
   const matches = useMemo(() => {
-    if (!text.startsWith("/")) return []
-    const word = text.split(" ")[0]?.toLowerCase() ?? ""
+    if (!text.startsWith("/")) return [];
+    const word = text.split(" ")[0]?.toLowerCase() ?? "";
     return Object.values(suggestions)
       .filter((s) =>
         text.includes(" ")
           ? s.name.toLowerCase() === word
-          : s.name.toLowerCase().startsWith(word)
+          : s.name.toLowerCase().startsWith(word),
       )
       .sort((a, b) => a.name.localeCompare(b.name))
-      .slice(0, 6)
-  }, [text, suggestions])
+      .slice(0, 6);
+  }, [text, suggestions]);
 
   const submit = () => {
-    const value = text.trim()
-    if (value) sentHistory.push(value)
-    if (sentHistory.length > 50) sentHistory.shift()
-    store.dispatch(inputSet(false))
-    void fetchNui("send", { channel: channel?.id, text: value }, OK)
-  }
+    const value = text.trim();
+    if (value) sentHistory.push(value);
+    if (sentHistory.length > 50) sentHistory.shift();
+    store.dispatch(inputSet(false));
+    void fetchNui("send", { channel: channel?.id, text: value }, OK);
+  };
 
   return (
     <div className="relative flex flex-col gap-[0.8vh]">
@@ -82,28 +82,28 @@ export function Input() {
           className="h-full min-w-0 flex-1 bg-transparent text-[1.4vh] text-text outline-none placeholder:text-text-4"
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") return submit()
-            if (e.key === "Escape") return close()
+            if (e.key === "Enter") return submit();
+            if (e.key === "Escape") return close();
             if (e.key === "Tab") {
-              e.preventDefault()
-              const first = matches[0]
-              if (first && !text.includes(" ")) setText(`${first.name} `)
+              e.preventDefault();
+              const first = matches[0];
+              if (first && !text.includes(" ")) setText(`${first.name} `);
               else if (channels.length > 1)
-                setChannelIndex((i) => (i + 1) % channels.length)
-              return
+                setChannelIndex((i) => (i + 1) % channels.length);
+              return;
             }
             if (e.key === "ArrowUp" || e.key === "ArrowDown") {
-              e.preventDefault()
+              e.preventDefault();
               const next =
                 e.key === "ArrowUp"
                   ? Math.min(sentHistory.length - 1, historyIndex + 1)
-                  : Math.max(-1, historyIndex - 1)
-              setHistoryIndex(next)
+                  : Math.max(-1, historyIndex - 1);
+              setHistoryIndex(next);
               setText(
                 next === -1
                   ? ""
-                  : (sentHistory[sentHistory.length - 1 - next] ?? "")
-              )
+                  : (sentHistory[sentHistory.length - 1 - next] ?? ""),
+              );
             }
           }}
         />
@@ -146,5 +146,5 @@ export function Input() {
         </ul>
       )}
     </div>
-  )
+  );
 }

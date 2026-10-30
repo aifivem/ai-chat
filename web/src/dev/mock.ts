@@ -1,6 +1,6 @@
-import en from "../../../locales/en.json"
-import settings from "../../../data/settings.json"
-import type { Channel, ChatMessage } from "../../../resource/common/chat"
+import en from "../../../locales/en.json";
+import settings from "../../../data/settings.json";
+import type { Channel, ChatMessage } from "../../../resource/common/chat";
 
 /** Browser preview only (`bun run webdev`): `?input=1` opens the input with `/` typed suggestions. */
 const CHANNELS: Channel[] = [
@@ -21,8 +21,8 @@ const CHANNELS: Channel[] = [
     jobs: ["police"],
     order: 2,
   },
-]
-export const MOCK_SETUP = { texts: en, settings, channels: CHANNELS }
+];
+export const MOCK_SETUP = { texts: en, settings, channels: CHANNELS };
 export const MOCK_MESSAGES: ChatMessage[] = [
   {
     args: ["Jamie Cole", "anyone at the 24/7 on Innocence?"],
@@ -40,7 +40,7 @@ export const MOCK_MESSAGES: ChatMessage[] = [
     channel: "police",
   },
   { args: ["^3[Server] ^7Restart in 30 minutes."] },
-]
+];
 export const MOCK_SUGGESTIONS = {
   add: [
     {
@@ -53,6 +53,6 @@ export const MOCK_SUGGESTIONS = {
     { name: "/report", help: "Send a report to the staff" },
   ],
   remove: [],
-}
+};
 export const MOCK_INPUT =
-  new URLSearchParams(window.location.search).get("input") !== null
+  new URLSearchParams(window.location.search).get("input") !== null;

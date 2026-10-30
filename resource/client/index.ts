@@ -1,2 +1,2 @@
-import "./chat"
-import "./events"
+import "./chat";
+import "./events";

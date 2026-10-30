@@ -1,19 +1,19 @@
-import { aiLogChannels } from "@aicore-fivem/lib/server"
-import { Locale } from "common"
-import { content } from "./content"
-import { deliver } from "./router"
-import "./suggestions"
-import "./exports"
+import { aiLogChannels } from "@aicore-fivem/lib/server";
+import { Locale } from "common";
+import { content } from "./content";
+import { deliver } from "./router";
+import "./suggestions";
+import "./exports";
 
-aiLogChannels({ messages: {} })
+aiLogChannels({ messages: {} });
 
 on("playerJoining", () => {
   if (content.settings.showJoins)
     deliver(-1, {
       args: [Locale("MSG_JOINED", GetPlayerName(String(globalThis.source)))],
       color: "#7d8a8e",
-    })
-})
+    });
+});
 on("playerDropped", (reason: string) => {
   if (content.settings.showJoins)
     deliver(-1, {
@@ -21,5 +21,5 @@ on("playerDropped", (reason: string) => {
         Locale("MSG_LEFT", GetPlayerName(String(globalThis.source)), reason),
       ],
       color: "#7d8a8e",
-    })
-})
+    });
+});
