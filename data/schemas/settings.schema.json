@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ai-chat/data/settings.json",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "This file's JSON Schema (for editors)."
+    },
+    "maxLength": {
+      "description": "Longest message: Longer messages are cut.",
+      "type": "integer",
+      "minimum": 16,
+      "maximum": 1000
+    },
+    "fadeSeconds": {
+      "description": "Stays on screen: Seconds the messages stay visible after a new one while the chat is closed.",
+      "type": "integer",
+      "minimum": 2,
+      "maximum": 60
+    },
+    "history": {
+      "description": "Messages kept: How many messages each player keeps to scroll back.",
+      "type": "integer",
+      "minimum": 20,
+      "maximum": 500
+    },
+    "showJoins": {
+      "description": "Join and leave messages: Tells everyone when a player joins or leaves.",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "maxLength",
+    "fadeSeconds",
+    "history",
+    "showJoins"
+  ]
+}

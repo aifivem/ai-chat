@@ -1,4 +1,5 @@
 {
+  "$schema": "./schemas/settings.schema.json",
   "maxLength": 256,
   "fadeSeconds": 8,
   "history": 100,

@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ai-chat/data/channels.json",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "This file's JSON Schema (for editors)."
+    }
+  },
+  "patternProperties": {
+    "^[a-z0-9_]{2,32}$": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "description": "Name",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 24
+        },
+        "color": {
+          "description": "Colour: Colour of the channel tag and the author, as #RRGGBB.",
+          "type": "string",
+          "minLength": 7,
+          "maxLength": 7,
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "range": {
+          "description": "Range: Only players this close to the writer read it. 0 means everyone on the server.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "jobs": {
+          "description": "Jobs: Empty: everyone. Otherwise only characters with one of these jobs see and use the channel.",
+          "type": "array",
+          "maxItems": 20,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "maxLength": 32,
+            "pattern": "^[a-z0-9_]{2,32}$"
+          }
+        },
+        "order": {
+          "description": "Order: Lower comes first; the first channel is where the chat opens.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        }
+      },
+      "required": [
+        "label",
+        "color",
+        "range",
+        "jobs",
+        "order"
+      ]
+    }
+  },
+  "additionalProperties": false
+}
