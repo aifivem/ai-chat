@@ -26,6 +26,7 @@ class Chat {
   private queue: NuiMessage[] = [];
   private readonly scriptModes = new Map<string, Channel>();
   private inputOpen = false;
+  private focusWatch: ReturnType<typeof setInterval> | null = null;
 
   send(message: NuiMessage): void {
     if (this.ready) SendNUIMessage(message);
@@ -90,10 +91,19 @@ class Chat {
     this.inputOpen = true;
     SetNuiFocus(true, false);
     this.send({ action: "openInput", data: null });
+    // Another resource may drop the NUI focus while the input shows: the input closes with it instead of staying
+    // on screen without the keyboard.
+    this.focusWatch ??= setInterval(() => {
+      if (IsNuiFocused()) return;
+      this.send({ action: "closeInput", data: null });
+      this.closeInput();
+    }, 250);
   }
 
   closeInput(): void {
     this.inputOpen = false;
+    if (this.focusWatch) clearInterval(this.focusWatch);
+    this.focusWatch = null;
     SetNuiFocus(false, false);
   }
 }

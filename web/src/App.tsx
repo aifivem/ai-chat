@@ -35,6 +35,7 @@ const onSuggestions = (data: Data<"suggestions">) =>
   store.dispatch(suggestionsChanged(data));
 const onClear = () => store.dispatch(cleared());
 const onOpenInput = () => store.dispatch(inputSet(true));
+const onCloseInput = () => store.dispatch(inputSet(false));
 
 const SETUP_MOCK = { mockData: MOCK_SETUP };
 const SUGGESTIONS_MOCK = { mockData: MOCK_SUGGESTIONS, mockDelay: 50 };
@@ -51,6 +52,7 @@ export function App() {
   useNuiEvent("suggestions", onSuggestions, SUGGESTIONS_MOCK);
   useNuiEvent("clear", onClear);
   useNuiEvent("openInput", onOpenInput);
+  useNuiEvent("closeInput", onCloseInput);
 
   useEffect(() => {
     void fetchNui("ready", undefined, { mockData: { ok: true } });

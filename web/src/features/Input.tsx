@@ -39,7 +39,15 @@ export function Input() {
       ? text
       : null;
 
-  useEffect(() => ref.current?.focus(), []);
+  useEffect(() => {
+    ref.current?.focus();
+    // Escape closes even when the text field lost the DOM focus (the frame keeps the keyboard).
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && document.activeElement !== ref.current) close();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   const matches = useMemo(() => {
     if (command === null || (commandMode && text === "")) return [];
@@ -117,6 +125,7 @@ export function Input() {
           )}
           aria-label={t("UI_PLACEHOLDER")}
           className="h-full min-w-0 flex-1 bg-transparent text-[1.4vh] text-text outline-none placeholder:text-text-4"
+          onBlur={() => setTimeout(() => ref.current?.focus(), 0)}
           onChange={(e) => {
             setText(e.target.value);
             setHistoryIndex(-1);

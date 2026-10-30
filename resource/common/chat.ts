@@ -171,4 +171,6 @@ export type NuiMessage =
   | { action: "suggestions"; data: { add: Suggestion[]; remove: string[] } }
   | { action: "clear"; data: null }
   | { action: "openInput"; data: null }
+  /** Another screen took the focus away: the input closes. */
+  | { action: "closeInput"; data: null }
   | { action: "closeInput"; data: null };
