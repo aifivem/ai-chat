@@ -1,4 +1,4 @@
-import type { PanelSchema } from "@aicore-fivem/shared";
+import type { PanelSchema } from "@aicore-fivem/shared"
 
 /** ai-chat's panel: message rules and the channels players write in. */
 export const chatSchema: PanelSchema = {
@@ -24,7 +24,13 @@ export const chatSchema: PanelSchema = {
         label: { type: "text", min: 1, max: 24 },
         color: { type: "text", min: 7, max: 7, pattern: "^#[0-9a-fA-F]{6}$" },
         range: { type: "number", min: 0, max: 1000, integer: true },
-        jobs: { type: "names", lookup: "job", max: 20, itemMax: 32, pattern: "^[a-z0-9_]{2,32}$" },
+        jobs: {
+          type: "names",
+          lookup: "job",
+          max: 20,
+          itemMax: 32,
+          pattern: "^[a-z0-9_]{2,32}$",
+        },
         order: { type: "number", min: 0, max: 100, integer: true },
       },
     },
@@ -44,11 +50,45 @@ export const chatSchema: PanelSchema = {
           title: "ADMIN_C_CHANNEL",
           desc: "ADMIN_C_CHANNEL_DESC",
           fields: [
-            { widget: "text", path: "label", label: "ADMIN_F_LABEL", placeholder: "ADMIN_P_LABEL" },
-            { widget: "text", path: "color", label: "ADMIN_F_COLOR", hint: "ADMIN_H_COLOR", placeholder: "ADMIN_P_COLOR" },
-            { widget: "number", path: "range", label: "ADMIN_F_RANGE", hint: "ADMIN_H_RANGE", min: 0, max: 1000, step: 5, unit: "m" },
-            { widget: "tags", lookup: "job", path: "jobs", label: "ADMIN_F_JOBS", hint: "ADMIN_H_JOBS", placeholder: "ADMIN_P_JOBS" },
-            { widget: "number", path: "order", label: "ADMIN_F_ORDER", hint: "ADMIN_H_ORDER", min: 0, max: 100 },
+            {
+              widget: "text",
+              path: "label",
+              label: "ADMIN_F_LABEL",
+              placeholder: "ADMIN_P_LABEL",
+            },
+            {
+              widget: "text",
+              path: "color",
+              label: "ADMIN_F_COLOR",
+              hint: "ADMIN_H_COLOR",
+              placeholder: "ADMIN_P_COLOR",
+            },
+            {
+              widget: "number",
+              path: "range",
+              label: "ADMIN_F_RANGE",
+              hint: "ADMIN_H_RANGE",
+              min: 0,
+              max: 1000,
+              step: 5,
+              unit: "m",
+            },
+            {
+              widget: "tags",
+              lookup: "job",
+              path: "jobs",
+              label: "ADMIN_F_JOBS",
+              hint: "ADMIN_H_JOBS",
+              placeholder: "ADMIN_P_JOBS",
+            },
+            {
+              widget: "number",
+              path: "order",
+              label: "ADMIN_F_ORDER",
+              hint: "ADMIN_H_ORDER",
+              min: 0,
+              max: 100,
+            },
           ],
         },
       ],
@@ -65,13 +105,41 @@ export const chatSchema: PanelSchema = {
           title: "ADMIN_C_MESSAGES",
           desc: "ADMIN_C_MESSAGES_DESC",
           fields: [
-            { widget: "number", path: "maxLength", label: "ADMIN_F_MAX_LENGTH", hint: "ADMIN_H_MAX_LENGTH", min: 16, max: 1000, unit: "ADMIN_U_CHARS" },
-            { widget: "number", path: "fadeSeconds", label: "ADMIN_F_FADE", hint: "ADMIN_H_FADE", min: 2, max: 60, unit: "s" },
-            { widget: "number", path: "history", label: "ADMIN_F_HISTORY", hint: "ADMIN_H_HISTORY", min: 20, max: 500 },
-            { widget: "switch", path: "showJoins", label: "ADMIN_F_JOINS", hint: "ADMIN_H_JOINS" },
+            {
+              widget: "number",
+              path: "maxLength",
+              label: "ADMIN_F_MAX_LENGTH",
+              hint: "ADMIN_H_MAX_LENGTH",
+              min: 16,
+              max: 1000,
+              unit: "ADMIN_U_CHARS",
+            },
+            {
+              widget: "number",
+              path: "fadeSeconds",
+              label: "ADMIN_F_FADE",
+              hint: "ADMIN_H_FADE",
+              min: 2,
+              max: 60,
+              unit: "s",
+            },
+            {
+              widget: "number",
+              path: "history",
+              label: "ADMIN_F_HISTORY",
+              hint: "ADMIN_H_HISTORY",
+              min: 20,
+              max: 500,
+            },
+            {
+              widget: "switch",
+              path: "showJoins",
+              label: "ADMIN_F_JOINS",
+              hint: "ADMIN_H_JOINS",
+            },
           ],
         },
       ],
     },
   ],
-};
+}
