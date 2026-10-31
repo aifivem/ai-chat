@@ -4,6 +4,7 @@ import { content } from "./content";
 import { deliver } from "./router";
 import "./suggestions";
 import "./exports";
+import "./commands";
 
 aiLogChannels({ messages: {} });
 

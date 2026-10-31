@@ -278,6 +278,7 @@ const CORE = {
 	clientDefinitionsEvent: "ai-core:client:definitions",
 	vehicleTypeCallback: "ai-core:vehicleType",
 	interactionStateKey: "ai:interaction",
+	pvpStateKey: "ai:pvp",
 	charactersCallback: "ai-core:characters",
 	createCharacterCallback: "ai-core:createCharacter",
 	deleteCharacterCallback: "ai-core:deleteCharacter",
@@ -297,6 +298,14 @@ const CORE = {
 	recommendationEvent: "ai-core:admin:recommendation",
 	worldEvent: (resource) => `${resource}:admin:world`,
 	worldChangesCallback: (resource) => `${resource}:admin:worldChanges`
+}, LIB_UI = {
+	resource: "ai-lib",
+	notifyEvent: "ai-lib:client:notify",
+	promptPressedEvent: "ai-lib:client:promptPressed",
+	cancelProgressEvent: "ai-lib:client:cancelProgress",
+	progressForCallback: "ai-lib:progressFor",
+	progressForCancelEvent: "ai-lib:client:progressForCancel",
+	minigameForCallback: "ai-lib:minigameFor"
 }, named = new Set();
 function registerExport(name, handler) {
 	named.add(name), globalThis.exports(name, handler);
@@ -613,7 +622,7 @@ function langFile(resource) {
 		return {};
 	}
 }
-function texts(resource) {
+function texts$1(resource) {
 	return {
 		...langFile("ai-core"),
 		...langFile(resource)
@@ -707,7 +716,7 @@ function objectOf(fields, prefix, desc) {
 	};
 }
 function fileSchema(resource, schema, name, spec) {
-	let desc = describe(schema, name, texts(resource)), title = `${resource}/data/${name}.json`, body = spec.kind === "settings" ? (() => {
+	let desc = describe(schema, name, texts$1(resource)), title = `${resource}/data/${name}.json`, body = spec.kind === "settings" ? (() => {
 		let obj = objectOf(spec.sections, "", desc), required = obj.required.filter((k) => !(k in (spec.defaults ?? {})));
 		return {
 			...obj,
@@ -752,7 +761,7 @@ var AdminPanel = class {
 	constructor(schema) {
 		this.schema = schema;
 		for (let [name, spec] of Object.entries(schema.files)) this.load(name, spec);
-		registerExport("AdminPanelSnapshot", () => this.snapshot()), registerExport("AdminPanelSummary", () => this.summary()), registerExport("AdminPanelApply", (admin, patch) => this.apply(admin, patch)), onClientCallback(ADMIN.worldChangesCallback(this.resource), () => Object.fromEntries(this.worldChanges), { rate: {
+		registerExport("AdminPanelSnapshot", () => this.snapshot()), registerExport("AdminPanelData", () => this.dataSnapshot()), registerExport("AdminPanelSummary", () => this.summary()), registerExport("AdminPanelApply", (admin, patch) => this.apply(admin, patch)), onClientCallback(ADMIN.worldChangesCallback(this.resource), () => Object.fromEntries(this.worldChanges), { rate: {
 			count: 4,
 			windowMs: 1e4
 		} }), setImmediate(() => core$15.RegisterAdminPanel(this.resource));
@@ -780,8 +789,11 @@ var AdminPanel = class {
 			resource: this.resource,
 			schema: this.schema,
 			texts: loadLocaleTexts(),
-			data: clone(Object.fromEntries(this.data))
+			data: this.dataSnapshot()
 		};
+	}
+	dataSnapshot() {
+		return clone(Object.fromEntries(this.data));
 	}
 	summary() {
 		let data = {}, index = {};
@@ -902,6 +914,15 @@ function aiLog(channel, message, options) {
 }
 function aiLogChannels(channels) {
 	optionalExport("ai-core")?.LogChannels(channels);
+}
+// ../../../packages/lib/src/server/notify.ts
+function notify(source, text, kind = "info", duration) {
+	let notification = {
+		text,
+		kind,
+		duration
+	};
+	emitNet(LIB_UI.notifyEvent, source, notification);
 }
 resourceExport(CORE.resource);
 // ../../../packages/lib/src/server/online.ts
@@ -1089,8 +1110,73 @@ new class {
 	}
 }();
 // ../../../packages/lib/src/server/command.ts
-const resource = GetCurrentResourceName();
-createLogger(resource), new class {
+const resource = GetCurrentResourceName(), log$2 = createLogger(resource);
+let texts = null;
+const t = (key, ...args) => formatText((texts ??= loadLocaleTexts(CORE.resource))[key] ?? key, args);
+function reply(source, text, kind) {
+	source > 0 ? notify(source, text, kind) : log$2.info(text);
+}
+var Command = class {
+	params;
+	handler;
+	info;
+	usage;
+	constructor(names, params, help, aces, handler) {
+		this.params = params, this.handler = handler, this.info = {
+			names,
+			help,
+			params: params.map((p) => ({ ...p })),
+			aces
+		}, this.usage = [`/${names[0]}`, ...params.map((p) => p.optional ? `[${p.name}]` : `<${p.name}>`)].join(" ");
+	}
+	allowed(source, name) {
+		let aces = this.info.aces;
+		if (source <= 0 || !aces) return !0;
+		let player = String(source);
+		return aces.some((ace) => IsPlayerAceAllowed(player, ace)) || !!IsPlayerAceAllowed(player, `command.${name}`);
+	}
+	suggestion(name) {
+		return {
+			name: `/${name}`,
+			help: this.info.help,
+			params: this.params.map((p) => ({
+				name: p.name,
+				help: p.help ?? ""
+			}))
+		};
+	}
+	run(source, name, raw, line) {
+		if (!this.allowed(source, name)) return reply(source, t("COMMAND_NOT_ALLOWED"), "error");
+		let args = this.parse(raw);
+		if (typeof args == "string") return reply(source, args, "error"), reply(source, t("COMMAND_USAGE", this.usage), "info");
+		let fail = (error) => log$2.error(`command /${name} failed`, error);
+		try {
+			let result = this.handler(source, args, line);
+			result instanceof Promise && result.catch(fail);
+		} catch (error) {
+			fail(error);
+		}
+	}
+	parse(raw) {
+		let args = {};
+		for (let [i, param] of this.params.entries()) {
+			let token = param.type === "longString" ? raw.slice(i).join(" ").trim() : raw[i] ?? "";
+			if (token === "") {
+				if (!param.optional) return t("COMMAND_MISSING", param.name);
+			} else {
+				if (param.type === "number" || param.type === "playerId") {
+					let value = Number(token);
+					if (!Number.isFinite(value)) return t("COMMAND_NUMBER", param.name);
+					if (param.type === "playerId" && (!Number.isInteger(value) || value <= 0 || !GetPlayerName(String(value)))) return t("COMMAND_PLAYER", token);
+					args[param.name] = value;
+				} else args[param.name] = token;
+				if (param.type === "longString") break;
+			}
+		}
+		return args;
+	}
+};
+const commands = new class {
 	list = [];
 	sent = new Map();
 	announced = 0;
@@ -1116,6 +1202,13 @@ createLogger(resource), new class {
 		});
 	}
 }();
+function addCommand(name, options, handler) {
+	let names = (Array.isArray(name) ? name : [name]).map((n) => n.toLowerCase());
+	if (names.length === 0) throw Error("addCommand needs a name");
+	let restricted = options.restricted ?? !1, aces = restricted === !1 ? null : restricted === !0 ? [ADMIN.ace] : Array.isArray(restricted) ? [...restricted] : [restricted], command = new Command(names, options.params ?? [], options.help ?? "", aces, handler);
+	for (let n of names) RegisterCommand(n, (source, raw, line) => command.run(Number(source), n, raw, line), !1);
+	commands.add(command);
+}
 // ../../../packages/lib/src/server/netEvent.ts
 const log$1 = createLogger(GetCurrentResourceName());
 function onClientEvent(name, first, second) {
@@ -1277,7 +1370,8 @@ GetCurrentResourceName(), IsDuplicityVersion();
 const EVENTS = {
 	send: "ai-chat:send",
 	ready: "ai-chat:ready",
-	suggestions: "ai-chat:client:suggestions"
+	suggestions: "ai-chat:client:suggestions",
+	me: "ai-chat:client:me"
 };
 function readSettings(raw) {
 	let s = record(raw);
@@ -1523,7 +1617,7 @@ function recipients(source, channel) {
 	for (let gang of rule.gangs) for (let target of online.gangMembers(gang)) out.add(target);
 	return [...out].filter((target) => online.allows(target, rule));
 }
-const clean = (text, max) => text.replace(/[\u0000-\u001f\u007f]/g, "").trim().slice(0, max);
+const clean$1 = (text, max) => text.replace(/[\u0000-\u001f\u007f]/g, "").trim().slice(0, max);
 function deliver(target, message) {
 	if (Array.isArray(target)) for (let id of target) emitNet("chat:addMessage", id, message);
 	else emitNet("chat:addMessage", target, message);
@@ -1535,7 +1629,7 @@ onClientEvent(EVENTS.send, {
 		windowMs: 3e3
 	}
 }, (source, channelId, raw) => {
-	let text = clean(raw, content.settings.maxLength);
+	let text = clean$1(raw, content.settings.maxLength);
 	if (!text || text.startsWith("/")) return;
 	let channel = content.channels.find((c) => c.id === channelId), mode = channel ? void 0 : modes.get(channelId);
 	if (!channel && !mode || channel && !online.allows(source, channel.access)) return;
@@ -1605,7 +1699,38 @@ const api = {
 	}
 };
 for (let [name, fn] of Object.entries(api)) registerExport(name, fn), provideExport("chat", name, fn);
-aiLogChannels({ messages: {} }), on("playerJoining", () => {
+// resource/server/commands.ts
+const message = {
+	name: "message",
+	type: "longString",
+	help: Locale("COMMAND_P_MESSAGE")
+}, near = (source) => [source, ...playersNear(source, 20)], clean = (text) => text.replace(/[\u0000-\u001f\u007f]/g, "").trim();
+addCommand("ooc", {
+	help: Locale("COMMAND_OOC"),
+	params: [message]
+}, (source, args) => {
+	let text = clean(args.message).slice(0, 300);
+	source <= 0 || !text || (deliver(near(source), {
+		args: [Locale("MSG_OOC", GetPlayerName(String(source))), text],
+		color: "#a0a0a0",
+		multiline: !0
+	}), aiLog("messages", `[ooc] ${text}`, {
+		source,
+		metadata: { channel: "ooc" }
+	}));
+}), addCommand("me", {
+	help: Locale("COMMAND_ME"),
+	params: [message]
+}, (source, args) => {
+	let text = clean(args.message).slice(0, 120);
+	if (!(source <= 0 || !text)) {
+		for (let target of near(source)) emitNet(EVENTS.me, target, source, text);
+		aiLog("messages", `[me] ${text}`, {
+			source,
+			metadata: { channel: "me" }
+		});
+	}
+}), aiLogChannels({ messages: {} }), on("playerJoining", () => {
 	content.settings.showJoins && deliver(-1, {
 		args: [Locale("MSG_JOINED", GetPlayerName(String(globalThis.source)))],
 		color: "#7d8a8e"

@@ -17,6 +17,8 @@ export const EVENTS = {
   ready: "ai-chat:ready",
   /** Server -> client: (add: Suggestion[], remove: string[]) commands the player may use, as a delta. */
   suggestions: "ai-chat:client:suggestions",
+  /** Server -> client: (serverId, text) a /me text over that player's head. */
+  me: "ai-chat:client:me",
 } as const;
 
 /** The FiveM chat resource's message shape, kept so every script's `chat:addMessage` works. */

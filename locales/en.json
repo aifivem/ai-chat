@@ -37,5 +37,9 @@
   "ADMIN_F_NO_SLASH": "Commands without /",
   "ADMIN_H_NO_SLASH": "The input opens in Command mode: players type a command without the slash. Tab moves through Command and the channels; a line starting with / still runs as a command in any channel.",
   "UI_COMMAND": "Command",
-  "UI_PLACEHOLDER_COMMAND": "Write a command without /"
+  "UI_PLACEHOLDER_COMMAND": "Write a command without /",
+  "COMMAND_OOC": "Out of character message to the players around you",
+  "COMMAND_ME": "Show an action over your head (\"lights a cigarette\")",
+  "COMMAND_P_MESSAGE": "Text",
+  "MSG_OOC": "OOC | {0}"
 }
