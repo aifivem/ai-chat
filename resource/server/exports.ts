@@ -10,8 +10,7 @@ const api: Record<string, (...args: unknown[]) => unknown> = {
       deliver(target as number | number[], parsed);
   },
   registerMessageHook: (fn) => {
-    if (typeof fn === "function")
-      addHook(GetInvokingResource() ?? "", fn as MessageHook);
+    if (typeof fn === "function") addHook(fn as MessageHook);
   },
   registerMode: (data) => {
     if (
@@ -27,7 +26,6 @@ const api: Record<string, (...args: unknown[]) => unknown> = {
       displayName:
         typeof d.displayName === "string" ? d.displayName : data.name,
       color: typeof d.color === "string" ? d.color : "#ffffff",
-      resource: GetInvokingResource() ?? "",
       cb: typeof d.cb === "function" ? (d.cb as MessageHook) : null,
     });
     emitNet("chat:addMode", -1, {

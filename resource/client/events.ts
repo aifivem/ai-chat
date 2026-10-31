@@ -4,6 +4,7 @@ import {
   provideExport,
   registerExport,
 } from "@aicore-fivem/lib/client";
+import { readAccess } from "@aicore-fivem/lib/shared";
 import {
   EVENTS,
   toChatMessage,
@@ -68,7 +69,14 @@ both("chat:addMode", (mode) => {
       : mode.name;
   const color =
     "color" in mode && typeof mode.color === "string" ? mode.color : "#ffffff";
-  chat.addMode({ id: mode.name, label, color, range: 0, jobs: [], order: 100 });
+  chat.addMode({
+    id: mode.name,
+    label,
+    color,
+    range: 0,
+    access: readAccess({}),
+    order: 100,
+  });
 });
 both("chat:removeMode", (mode) => {
   const name =

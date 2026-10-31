@@ -1,4 +1,12 @@
-import { bool, int, isRecord, record, str } from "@aicore-fivem/lib/shared";
+import {
+  type AccessRule,
+  bool,
+  int,
+  isRecord,
+  readAccess,
+  record,
+  str,
+} from "@aicore-fivem/lib/shared";
 
 /** ai-chat's contracts: events, messages, suggestions, panel content. No natives. */
 
@@ -46,8 +54,8 @@ export interface Channel {
   color: string;
   /** Metres around the sender who see it; 0 = everyone. */
   range: number;
-  /** Empty = everyone may write and read; otherwise these jobs only. */
-  jobs: string[];
+  /** Who may write and read (lib access fields; public = everyone). */
+  access: AccessRule;
   order: number;
 }
 
@@ -73,9 +81,7 @@ export function readChannels(raw: unknown): Channel[] {
           ? str(v.color, "")
           : "#36ff9f",
         range: int(v.range, 0, 0, 1000),
-        jobs: Array.isArray(v.jobs)
-          ? v.jobs.filter((j): j is string => typeof j === "string")
-          : [],
+        access: readAccess(v),
         order: int(v.order, 0, 0, 100),
       };
     })

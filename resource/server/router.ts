@@ -1,9 +1,11 @@
 import {
   aiLog,
+  ByResource,
   onClientEvent,
   online,
   playersNear,
 } from "@aicore-fivem/lib/server";
+import { isPublic } from "@aicore-fivem/lib/shared";
 import { EVENTS, type Channel, type ChatMessage } from "common/chat";
 import { content } from "./content";
 
@@ -24,42 +26,38 @@ export interface ScriptMode {
   name: string;
   displayName: string;
   color: string;
-  resource: string;
   cb: MessageHook | null;
 }
 
-const hooks: Array<{ resource: string; fn: MessageHook }> = [];
-export const modes = new Map<string, ScriptMode>();
+/** Hooks and modes belong to the resource that registered them (lib `ByResource`: gone when it stops). */
+const hooks = new ByResource<number, MessageHook>();
+let nextHook = 0;
+export const modes = new ByResource<string, ScriptMode>();
 
-export function addHook(resource: string, fn: MessageHook): void {
-  hooks.push({ resource, fn });
+/** Registers a message hook for the calling resource. */
+export function addHook(fn: MessageHook): void {
+  hooks.set(++nextHook, fn);
 }
-
-on("onResourceStop", (resource: string) => {
-  for (let i = hooks.length - 1; i >= 0; i--)
-    if (hooks[i]?.resource === resource) hooks.splice(i, 1);
-  for (const [name, mode] of modes)
-    if (mode.resource === resource) modes.delete(name);
-});
-
-const inJobs = (source: number, jobs: string[]): boolean =>
-  jobs.length === 0 || online.jobs(source).some((job) => jobs.includes(job));
 
 const authorOf = (source: number): string => online.name(source);
 
-/** Who reads a panel channel: everyone, the players within its range of the sender, or its jobs. */
+/** Who reads a panel channel: everyone, the players within its range of the sender, or who passes its access rule. */
 function recipients(source: number, channel: Channel): number | number[] {
-  if (channel.range === 0 && channel.jobs.length === 0) return -1;
+  const rule = channel.access;
+  if (channel.range === 0 && isPublic(rule)) return -1;
   // A ranged channel measures only the players in the sender's scope, not everyone online.
   if (channel.range > 0)
     return playersNear(source, channel.range).filter((target) =>
-      inJobs(target, channel.jobs),
+      online.allows(target, rule),
     );
-  // A job channel: the members of its jobs from lib `online`'s member sets (O(members), a set drops doubles).
+  // A locked channel: the members of its jobs and gangs from lib `online`'s member sets (O(members), a set drops
+  // doubles), each checked against the rule (grades, on duty).
   const out = new Set<number>();
-  for (const job of channel.jobs)
+  for (const job of rule.jobs)
     for (const target of online.jobMembers(job)) out.add(target);
-  return [...out];
+  for (const gang of rule.gangs)
+    for (const target of online.gangMembers(gang)) out.add(target);
+  return [...out].filter((target) => online.allows(target, rule));
 }
 
 /** Removes control characters and colour-code abuse is left to the screen (it draws `^n` safely). */
@@ -93,7 +91,7 @@ onClientEvent(
     const channel = content.channels.find((c) => c.id === channelId);
     const mode = channel ? undefined : modes.get(channelId);
     if (!channel && !mode) return;
-    if (channel && !inJobs(source, channel.jobs)) return;
+    if (channel && !online.allows(source, channel.access)) return;
     const author = authorOf(source);
     let message: ChatMessage = {
       args: [author, text],
@@ -107,7 +105,7 @@ onClientEvent(
       cancel: () => void (canceled = true),
       setRouting: (target) => void (routing = target),
     };
-    for (const hook of hooks) hook.fn(source, message, ref);
+    for (const hook of hooks.values()) hook(source, message, ref);
     mode?.cb?.(source, message, ref);
     if (canceled) return;
     // Scripts listening to the classic event may cancel it too.

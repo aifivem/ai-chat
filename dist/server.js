@@ -46,6 +46,60 @@ function str(value, fallback, max = 64) {
 function record(value) {
 	return typeof value == "object" && value && !Array.isArray(value) ? value : {};
 }
+// ../../../packages/lib/src/shared/access.ts
+const names = (v) => Array.isArray(v) ? v.filter((x) => typeof x == "string") : [];
+function readAccess(value) {
+	let v = record(value), grades = {};
+	for (let [name, grade] of Object.entries(record(v.grades))) typeof grade == "number" && Number.isInteger(grade) && grade >= 0 && (grades[name] = grade);
+	return {
+		jobs: names(v.jobs),
+		gangs: names(v.gangs),
+		grades,
+		onDuty: bool(v.onDuty, !1)
+	};
+}
+const isPublic = (rule) => rule.jobs.length === 0 && rule.gangs.length === 0, ACCESS_FIELDS = {
+	jobs: {
+		type: "names",
+		lookup: "job",
+		optional: !0
+	},
+	gangs: {
+		type: "names",
+		lookup: "gang",
+		optional: !0
+	},
+	onDuty: {
+		type: "bool",
+		optional: !0
+	}
+};
+function accessFields() {
+	return [
+		{
+			widget: "tags",
+			lookup: "job",
+			path: "jobs",
+			label: "ADMIN_F_ACCESS_JOBS",
+			hint: "ADMIN_H_ACCESS_JOBS",
+			placeholder: "ADMIN_P_ACCESS_JOBS"
+		},
+		{
+			widget: "tags",
+			lookup: "gang",
+			path: "gangs",
+			label: "ADMIN_F_ACCESS_GANGS",
+			hint: "ADMIN_H_ACCESS_GANGS",
+			placeholder: "ADMIN_P_ACCESS_GANGS"
+		},
+		{
+			widget: "switch",
+			path: "onDuty",
+			label: "ADMIN_F_ACCESS_ON_DUTY",
+			hint: "ADMIN_H_ACCESS_ON_DUTY"
+		}
+	];
+}
 // ../../../packages/lib/src/shared/records.ts
 const isObject = (value) => typeof value == "object" && !!value && !Array.isArray(value);
 function readRecords(raw, readOne) {
@@ -235,6 +289,7 @@ const CORE = {
 }, ADMIN = {
 	ace: "ai.admin",
 	openCallback: "ai-core:admin:open",
+	panelDataCallback: "ai-core:admin:panelData",
 	applyCallback: "ai-core:admin:apply",
 	closeEvent: "ai-core:admin:close",
 	showEvent: "ai-core:admin:show",
@@ -402,7 +457,7 @@ function toPatch(value) {
 		default: return null;
 	}
 }
-const clone = (value) => value === void 0 ? value : JSON.parse(JSON.stringify(value)), core$15 = resourceExport(CORE.resource), ERR = {
+const clone = (value) => value === void 0 ? value : JSON.parse(JSON.stringify(value)), core$16 = resourceExport(CORE.resource), ERR = {
 	type: "ADMIN_ERR_TYPE",
 	range: "ADMIN_ERR_RANGE",
 	length: "ADMIN_ERR_LENGTH",
@@ -416,7 +471,7 @@ const clone = (value) => value === void 0 ? value : JSON.parse(JSON.stringify(va
 		if (cached && Date.now() - cached.at < 2e3) return cached.values.size > 0 ? cached.values : null;
 		let list = [];
 		try {
-			list = core$15.GetLookupValues(source);
+			list = core$16.GetLookupValues(source);
 		} catch {}
 		let values = new Set(Array.isArray(list) ? list.filter((v) => typeof v == "string") : []);
 		return this.lists.set(source, {
@@ -681,7 +736,7 @@ function writeSchema(resource, name, text, log) {
 	(0, node_fs_promises.mkdir)(dir, { recursive: !0 }).then(() => (0, node_fs_promises.writeFile)(`${dir}/${name}.schema.json`, text, "utf8")).catch((error) => log.error(`writing ${resource}/${path} failed`, error));
 }
 // ../../../packages/lib/src/server/admin/panel.ts
-const core$14 = resourceExport(CORE.resource);
+const core$15 = resourceExport(CORE.resource);
 var AdminPanel = class {
 	schema;
 	data = new Map();
@@ -697,10 +752,10 @@ var AdminPanel = class {
 	constructor(schema) {
 		this.schema = schema;
 		for (let [name, spec] of Object.entries(schema.files)) this.load(name, spec);
-		registerExport("AdminPanelSnapshot", () => this.snapshot()), registerExport("AdminPanelApply", (admin, patch) => this.apply(admin, patch)), onClientCallback(ADMIN.worldChangesCallback(this.resource), () => Object.fromEntries(this.worldChanges), { rate: {
+		registerExport("AdminPanelSnapshot", () => this.snapshot()), registerExport("AdminPanelSummary", () => this.summary()), registerExport("AdminPanelApply", (admin, patch) => this.apply(admin, patch)), onClientCallback(ADMIN.worldChangesCallback(this.resource), () => Object.fromEntries(this.worldChanges), { rate: {
 			count: 4,
 			windowMs: 1e4
-		} }), setImmediate(() => core$14.RegisterAdminPanel(this.resource));
+		} }), setImmediate(() => core$15.RegisterAdminPanel(this.resource));
 	}
 	get(file) {
 		return this.data.get(file) ?? {};
@@ -726,6 +781,27 @@ var AdminPanel = class {
 			schema: this.schema,
 			texts: loadLocaleTexts(),
 			data: clone(Object.fromEntries(this.data))
+		};
+	}
+	summary() {
+		let data = {}, index = {};
+		for (let [file, spec] of Object.entries(this.schema.files)) {
+			let content = this.data.get(file);
+			if (spec.kind !== "records") {
+				data[file] = clone(content ?? {});
+				continue;
+			}
+			let labels = {};
+			for (let [key, record] of Object.entries(content ?? {})) labels[key] = labelOf(record, spec.labelPath) ?? key;
+			index[file] = labels;
+		}
+		return {
+			resource: this.resource,
+			schema: this.schema,
+			texts: loadLocaleTexts(),
+			data,
+			loaded: !1,
+			index
 		};
 	}
 	apply(admin, raw) {
@@ -790,7 +866,7 @@ var AdminPanel = class {
 		let spec = this.schema.files[file], data = this.get(file), value = key === void 0 ? data : data[key] ?? null;
 		this.dataFiles.get(file)?.write(data), this.views.changed(file, key, value);
 		for (let handler of this.handlers.get(file) ?? []) handler(key, value);
-		if (core$14.AdminPanelChanged({
+		if (core$15.AdminPanelChanged({
 			resource: this.resource,
 			file,
 			key,
@@ -811,6 +887,15 @@ var AdminPanel = class {
 		this.data.set(name, data), (filled || raw === null || !file.hasSchemaRef()) && file.write(data);
 	}
 };
+function labelOf(record, path) {
+	if (!path) return null;
+	let at = record;
+	for (let part of path.split(".")) {
+		if (typeof at != "object" || !at) return null;
+		at = at[part];
+	}
+	return typeof at == "string" && at !== "" ? at : null;
+}
 // ../../../packages/lib/src/server/log.ts
 function aiLog(channel, message, options) {
 	optionalExport("ai-core")?.Log(channel, message, options);
@@ -820,7 +905,7 @@ function aiLogChannels(channels) {
 }
 resourceExport(CORE.resource);
 // ../../../packages/lib/src/server/online.ts
-const core$12 = resourceExport(CORE.resource);
+const core$13 = resourceExport(CORE.resource);
 function reindex(index, source, before, after) {
 	for (let name of before) {
 		let set = index.get(name);
@@ -848,11 +933,11 @@ var OnlinePlayers = class {
 				gangs: [],
 				gangNames: [],
 				duty: null
-			}), this.setJobs(source, core$12.GetJobs(source) ?? []), this.setGangs(source, core$12.GetGangs(source) ?? []), this.setDuty(source, core$12.GetDutyJob(source));
+			}), this.setJobs(source, core$13.GetJobs(source) ?? []), this.setGangs(source, core$13.GetGangs(source) ?? []), this.setDuty(source, core$13.GetDutyJob(source));
 		};
 		on(CORE.playerLoadedEvent, load), on(CORE.playerUnloadedEvent, (source) => this.drop(source)), on(CORE.jobsChangedEvent, (source, jobs) => this.setJobs(source, jobs)), on(CORE.gangsChangedEvent, (source, gangs) => this.setGangs(source, gangs)), on(CORE.dutyChangedEvent, (source, job) => this.setDuty(source, job));
-		for (let source of core$12.GetLoadedSources()) {
-			let character = core$12.GetCharacter(source);
+		for (let source of core$13.GetLoadedSources()) {
+			let character = core$13.GetCharacter(source);
 			character && load(source, character);
 		}
 	}
@@ -921,6 +1006,20 @@ var OnlinePlayers = class {
 		let duty = this.dutyJob(source);
 		return duty !== null && jobs.includes(duty);
 	}
+	allows(source, rule) {
+		if (isPublic(rule)) return !0;
+		let min = (name) => rule.grades[name] ?? 0;
+		for (let gang of rule.gangs) {
+			let grade = this.gangGrade(source, gang);
+			if (grade !== null && grade >= min(gang)) return !0;
+		}
+		let duty = rule.onDuty ? this.dutyJob(source) : null;
+		for (let job of rule.jobs) {
+			let grade = this.jobGrade(source, job);
+			if (grade !== null && grade >= min(job) && (!rule.onDuty || duty === job)) return !0;
+		}
+		return !1;
+	}
 	countOnDuty(jobs) {
 		this.start();
 		let count = 0;
@@ -934,7 +1033,7 @@ var OnlinePlayers = class {
 const EMPTY = new Set(), online = new OnlinePlayers();
 resourceExport(CORE.resource);
 // ../../../packages/lib/src/server/proximity.ts
-const core$10 = resourceExport(CORE.resource);
+const core$11 = resourceExport(CORE.resource);
 function within(point, radius, candidates) {
 	let out = [];
 	for (let source of candidates) {
@@ -944,13 +1043,13 @@ function within(point, radius, candidates) {
 	return out;
 }
 function playersNear(source, radius) {
-	return within(coordsOf(source), radius, [source, ...core$10.GetPlayersInScope(source)]);
+	return within(coordsOf(source), radius, [source, ...core$11.GetPlayersInScope(source)]);
 }
 createLogger(GetCurrentResourceName());
 const dropped = new Set();
-let listening = !1;
+let listening$1 = !1;
 function onDropped(fn) {
-	listening || (listening = !0, on("playerDropped", () => {
+	listening$1 || (listening$1 = !0, on("playerDropped", () => {
 		let source = Number(globalThis.source);
 		for (let handler of dropped) handler(source);
 	})), dropped.add(fn);
@@ -970,6 +1069,25 @@ on(CORE.playerUnloadedEvent, (source) => {
 	let settle = running.get(source);
 	settle && settle(!1);
 });
+// ../../../packages/lib/src/server/definitions.ts
+const core$10 = resourceExport("ai-core");
+new class {
+	jobs = new Map();
+	gangs = new Map();
+	constructor() {
+		on(CORE.definitionsChangedEvent, (file, name) => {
+			typeof name == "string" && (file === "jobs" ? this.jobs.delete(name) : file === "gangs" && this.gangs.delete(name));
+		});
+	}
+	job(name) {
+		let def = this.jobs.get(name);
+		return def === void 0 && this.jobs.set(name, def = core$10.GetJobDefinition(name) ?? null), def;
+	}
+	gang(name) {
+		let def = this.gangs.get(name);
+		return def === void 0 && this.gangs.set(name, def = core$10.GetGangDefinition(name) ?? null), def;
+	}
+}();
 // ../../../packages/lib/src/server/command.ts
 const resource = GetCurrentResourceName();
 createLogger(resource), new class {
@@ -1008,8 +1126,65 @@ function onClientEvent(name, first, second) {
 	});
 }
 createLogger("aicore-lib");
-// ../../../packages/lib/src/fivem/scheduler.ts
-var Group = class {
+// ../../../packages/lib/src/fivem/byResource.ts
+function caller() {
+	let invoking = GetInvokingResource();
+	return invoking != null && invoking !== "" ? invoking : GetCurrentResourceName();
+}
+const stopHandlers = [];
+let listening = !1;
+function onStop(handler) {
+	if (stopHandlers.push(handler), listening) return;
+	listening = !0;
+	let event = IsDuplicityVersion() ? "onResourceStop" : "onClientResourceStop";
+	on(event, (resource) => {
+		for (let stop of stopHandlers) stop(resource);
+	});
+}
+var ByResource = class {
+	options;
+	byOwner = new Map();
+	owners = new Map();
+	constructor(options = {}) {
+		this.options = options, onStop((resource) => this.dropResource(resource));
+	}
+	set(key, value, owner = caller()) {
+		let previous = this.owners.get(key);
+		previous !== void 0 && previous !== owner && this.byOwner.get(previous)?.delete(key);
+		let map = this.byOwner.get(owner);
+		map || this.byOwner.set(owner, map = new Map()), map.set(key, value), this.owners.set(key, owner);
+	}
+	get(key) {
+		let owner = this.owners.get(key);
+		return owner === void 0 ? void 0 : this.byOwner.get(owner)?.get(key);
+	}
+	ownerOf(key) {
+		return this.owners.get(key);
+	}
+	delete(key) {
+		let owner = this.owners.get(key);
+		if (owner === void 0) return !1;
+		this.owners.delete(key);
+		let map = this.byOwner.get(owner);
+		return map?.delete(key), map?.size === 0 && this.byOwner.delete(owner), !0;
+	}
+	*values() {
+		for (let map of this.byOwner.values()) yield* map.values();
+	}
+	*entries() {
+		for (let map of this.byOwner.values()) yield* map.entries();
+	}
+	get size() {
+		return this.owners.size;
+	}
+	dropResource(resource) {
+		let map = this.byOwner.get(resource);
+		if (map) {
+			this.byOwner.delete(resource);
+			for (let [key, value] of map) this.owners.delete(key), this.options.onDrop?.(resource, key, value);
+		}
+	}
+}, Group = class {
 	interval;
 	jobs = Array(8);
 	gens = Array(8).fill(0);
@@ -1122,7 +1297,7 @@ function readChannels(raw) {
 			label: str(v.label, id, 24),
 			color: /^#[0-9a-fA-F]{6}$/.test(str(v.color, "")) ? str(v.color, "") : "#36ff9f",
 			range: int(v.range, 0, 0, 1e3),
-			jobs: Array.isArray(v.jobs) ? v.jobs.filter((j) => typeof j == "string") : [],
+			access: readAccess(v),
 			order: int(v.order, 0, 0, 100)
 		};
 	}).sort((a, b) => a.order - b.order);
@@ -1202,6 +1377,7 @@ const content = new ChatContent(new AdminPanel({
 				color: "#36ff9f",
 				range: 0,
 				jobs: [],
+				gangs: [],
 				order: 10
 			},
 			sections: {
@@ -1222,13 +1398,7 @@ const content = new ChatContent(new AdminPanel({
 					max: 1e3,
 					integer: !0
 				},
-				jobs: {
-					type: "names",
-					lookup: "job",
-					max: 20,
-					itemMax: 32,
-					pattern: "^[a-z0-9_]{2,32}$"
-				},
+				...ACCESS_FIELDS,
 				order: {
 					type: "number",
 					min: 0,
@@ -1274,14 +1444,7 @@ const content = new ChatContent(new AdminPanel({
 					step: 5,
 					unit: "m"
 				},
-				{
-					widget: "tags",
-					lookup: "job",
-					path: "jobs",
-					label: "ADMIN_F_JOBS",
-					hint: "ADMIN_H_JOBS",
-					placeholder: "ADMIN_P_JOBS"
-				},
+				...accessFields(),
 				{
 					widget: "number",
 					path: "order",
@@ -1344,24 +1507,21 @@ const content = new ChatContent(new AdminPanel({
 			]
 		}]
 	}]
-})), hooks = [], modes = new Map();
-function addHook(resource, fn) {
-	hooks.push({
-		resource,
-		fn
-	});
+})), hooks = new ByResource();
+let nextHook = 0;
+const modes = new ByResource();
+function addHook(fn) {
+	hooks.set(++nextHook, fn);
 }
-on("onResourceStop", (resource) => {
-	for (let i = hooks.length - 1; i >= 0; i--) hooks[i]?.resource === resource && hooks.splice(i, 1);
-	for (let [name, mode] of modes) mode.resource === resource && modes.delete(name);
-});
-const inJobs = (source, jobs) => jobs.length === 0 || online.jobs(source).some((job) => jobs.includes(job)), authorOf = (source) => online.name(source);
+const authorOf = (source) => online.name(source);
 function recipients(source, channel) {
-	if (channel.range === 0 && channel.jobs.length === 0) return -1;
-	if (channel.range > 0) return playersNear(source, channel.range).filter((target) => inJobs(target, channel.jobs));
+	let rule = channel.access;
+	if (channel.range === 0 && isPublic(rule)) return -1;
+	if (channel.range > 0) return playersNear(source, channel.range).filter((target) => online.allows(target, rule));
 	let out = new Set();
-	for (let job of channel.jobs) for (let target of online.jobMembers(job)) out.add(target);
-	return [...out];
+	for (let job of rule.jobs) for (let target of online.jobMembers(job)) out.add(target);
+	for (let gang of rule.gangs) for (let target of online.gangMembers(gang)) out.add(target);
+	return [...out].filter((target) => online.allows(target, rule));
 }
 const clean = (text, max) => text.replace(/[\u0000-\u001f\u007f]/g, "").trim().slice(0, max);
 function deliver(target, message) {
@@ -1378,7 +1538,7 @@ onClientEvent(EVENTS.send, {
 	let text = clean(raw, content.settings.maxLength);
 	if (!text || text.startsWith("/")) return;
 	let channel = content.channels.find((c) => c.id === channelId), mode = channel ? void 0 : modes.get(channelId);
-	if (!channel && !mode || channel && !inJobs(source, channel.jobs)) return;
+	if (!channel && !mode || channel && !online.allows(source, channel.access)) return;
 	let author = authorOf(source), message = {
 		args: [author, text],
 		color: channel?.color ?? mode?.color,
@@ -1391,7 +1551,7 @@ onClientEvent(EVENTS.send, {
 		cancel: () => void (canceled = !0),
 		setRouting: (target) => void (routing = target)
 	};
-	for (let hook of hooks) hook.fn(source, message, ref);
+	for (let hook of hooks.values()) hook(source, message, ref);
 	mode?.cb?.(source, message, ref), canceled || (emit("chatMessage", source, author, text), WasEventCanceled() || (deliver(routing, message), aiLog("messages", `[${channelId}] ${text}`, {
 		source,
 		metadata: { channel: channelId }
@@ -1427,7 +1587,7 @@ const api = {
 		parsed && (typeof target == "number" || Array.isArray(target)) && deliver(target, parsed);
 	},
 	registerMessageHook: (fn) => {
-		typeof fn == "function" && addHook(GetInvokingResource() ?? "", fn);
+		typeof fn == "function" && addHook(fn);
 	},
 	registerMode: (data) => {
 		if (typeof data != "object" || !data || !("name" in data) || typeof data.name != "string") return;
@@ -1436,7 +1596,6 @@ const api = {
 			name: data.name,
 			displayName: typeof d.displayName == "string" ? d.displayName : data.name,
 			color: typeof d.color == "string" ? d.color : "#ffffff",
-			resource: GetInvokingResource() ?? "",
 			cb: typeof d.cb == "function" ? d.cb : null
 		}), emitNet("chat:addMode", -1, {
 			name: data.name,

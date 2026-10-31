@@ -1,3 +1,4 @@
+import { ACCESS_FIELDS, accessFields } from "@aicore-fivem/lib/shared";
 import type { PanelSchema } from "@aicore-fivem/shared";
 
 /** ai-chat's panel: message rules and the channels players write in. */
@@ -21,18 +22,19 @@ export const chatSchema: PanelSchema = {
       kind: "records",
       sync: "all",
       labelPath: "label",
-      newRecord: { label: "", color: "#36ff9f", range: 0, jobs: [], order: 10 },
+      newRecord: {
+        label: "",
+        color: "#36ff9f",
+        range: 0,
+        jobs: [],
+        gangs: [],
+        order: 10,
+      },
       sections: {
         label: { type: "text", min: 1, max: 24 },
         color: { type: "text", min: 7, max: 7, pattern: "^#[0-9a-fA-F]{6}$" },
         range: { type: "number", min: 0, max: 1000, integer: true },
-        jobs: {
-          type: "names",
-          lookup: "job",
-          max: 20,
-          itemMax: 32,
-          pattern: "^[a-z0-9_]{2,32}$",
-        },
+        ...ACCESS_FIELDS,
         order: { type: "number", min: 0, max: 100, integer: true },
       },
     },
@@ -75,14 +77,7 @@ export const chatSchema: PanelSchema = {
               step: 5,
               unit: "m",
             },
-            {
-              widget: "tags",
-              lookup: "job",
-              path: "jobs",
-              label: "ADMIN_F_JOBS",
-              hint: "ADMIN_H_JOBS",
-              placeholder: "ADMIN_P_JOBS",
-            },
+            ...accessFields(),
             {
               widget: "number",
               path: "order",

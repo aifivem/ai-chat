@@ -2,6 +2,8 @@ import en from "../../../locales/en.json";
 import settings from "../../../data/settings.json";
 import type { Channel, ChatMessage } from "../../../resource/common/chat";
 
+const everyone = { jobs: [], gangs: [], grades: {}, onDuty: false };
+
 /** Browser preview only (`bun run webdev`): `?input=1` opens the input with `/` typed suggestions. */
 const CHANNELS: Channel[] = [
   {
@@ -9,16 +11,23 @@ const CHANNELS: Channel[] = [
     label: "Local",
     color: "#ffffff",
     range: 20,
-    jobs: [],
+    access: everyone,
     order: 0,
   },
-  { id: "ooc", label: "OOC", color: "#f5b742", range: 0, jobs: [], order: 1 },
+  {
+    id: "ooc",
+    label: "OOC",
+    color: "#f5b742",
+    range: 0,
+    access: everyone,
+    order: 1,
+  },
   {
     id: "police",
     label: "Police",
     color: "#4a8cff",
     range: 0,
-    jobs: ["police"],
+    access: { ...everyone, jobs: ["police"] },
     order: 2,
   },
 ];

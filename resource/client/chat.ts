@@ -1,11 +1,11 @@
 import {
   AdminWorld,
+  allows,
   every,
-  getPlayerData,
   type Job,
   Keybind,
   loadLocaleTexts,
-  onPlayerData,
+  onMembershipChange,
 } from "@aicore-fivem/lib/client";
 import { Locale } from "common";
 import {
@@ -35,12 +35,9 @@ class Chat {
     else if (this.queue.length < 200) this.queue.push(message);
   }
 
-  /** Panel channels the character's jobs allow, then channels scripts registered. */
+  /** Panel channels the character passes the access rule of (the server checks the same), then script channels. */
   channels(): Channel[] {
-    const jobs = (getPlayerData("jobs") ?? []).map((m) => m.job);
-    const own = content.channels.filter(
-      (c) => c.jobs.length === 0 || c.jobs.some((j) => jobs.includes(j)),
-    );
+    const own = content.channels.filter((c) => allows(c.access));
     return [...own, ...this.scriptModes.values()];
   }
 
@@ -112,7 +109,7 @@ class Chat {
 
 export const chat = new Chat();
 content.subscribe(() => chat.resetup());
-onPlayerData("jobs", () => chat.resetup());
+onMembershipChange(() => chat.resetup());
 
 new Keybind({
   name: "chat_open",
