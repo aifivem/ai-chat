@@ -1,4 +1,9 @@
-import { every, onServerEvent, player } from "@aicore-fivem/lib/client";
+import {
+  every,
+  onServerEvent,
+  player,
+  playerPed,
+} from "@aicore-fivem/lib/client";
 import { readId, readText } from "@aicore-fivem/lib/shared";
 import { EVENTS } from "common/chat";
 
@@ -12,12 +17,12 @@ const frame = every(0, draw, { active: false, name: "me" });
 function draw(): void {
   const now = GetGameTimer();
   for (const [serverId, me] of shown) {
-    const id = GetPlayerFromServerId(serverId);
-    if (now > me.until || id === -1) {
+    const ped = playerPed(serverId);
+    if (now > me.until || !ped) {
       shown.delete(serverId);
       continue;
     }
-    const [x = 0, y = 0, z = 0] = GetEntityCoords(GetPlayerPed(id), false);
+    const [x = 0, y = 0, z = 0] = GetEntityCoords(ped, false);
     if (player.distanceTo({ x, y, z }) > DRAW_METRES) continue;
     const [visible, sx, sy] = World3dToScreen2d(x, y, z + 1.05);
     if (!visible) continue;

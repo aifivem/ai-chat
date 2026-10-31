@@ -279,6 +279,8 @@ const CORE = {
 	vehicleTypeCallback: "ai-core:vehicleType",
 	interactionStateKey: "ai:interaction",
 	pvpStateKey: "ai:pvp",
+	medicalStateKey: "ai:medical",
+	clientDeadEvent: "ai-core:client:dead",
 	charactersCallback: "ai-core:characters",
 	createCharacterCallback: "ai-core:createCharacter",
 	deleteCharacterCallback: "ai-core:deleteCharacter",
@@ -998,6 +1000,9 @@ var OnlinePlayers = class {
 	character(source) {
 		return this.start(), this.players.get(source)?.character ?? null;
 	}
+	charId(source) {
+		return this.start(), this.players.get(source)?.character.id;
+	}
 	name(source, options = {}) {
 		let c = this.character(source);
 		return c ? `${c.firstname} ${c.lastname}` : options.fallback === !1 ? "" : GetPlayerName(String(source));
@@ -1226,7 +1231,7 @@ function caller() {
 }
 const stopHandlers = [];
 let listening = !1;
-function onStop(handler) {
+function onAnyStop(handler) {
 	if (stopHandlers.push(handler), listening) return;
 	listening = !0;
 	let event = IsDuplicityVersion() ? "onResourceStop" : "onClientResourceStop";
@@ -1239,7 +1244,7 @@ var ByResource = class {
 	byOwner = new Map();
 	owners = new Map();
 	constructor(options = {}) {
-		this.options = options, onStop((resource) => this.dropResource(resource));
+		this.options = options, onAnyStop((resource) => this.dropResource(resource));
 	}
 	set(key, value, owner = caller()) {
 		let previous = this.owners.get(key);
