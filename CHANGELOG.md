@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/aifivem/ai-chat/compare/v0.1.1...v0.1.2) (2026-10-31)
+
+
+### Miscellaneous Chores
+
+* rebuild with the current lib ([d5b0301](https://github.com/aifivem/ai-chat/commit/d5b03011d46f8c836e08c40700e9fb44294e1043))
+
 ## [0.1.1](https://github.com/aifivem/ai-chat/compare/v0.1.0...v0.1.1) (2026-10-31)
 
 
