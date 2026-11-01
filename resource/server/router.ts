@@ -1,5 +1,6 @@
 import {
   aiLog,
+  aiLogChannels,
   ByResource,
   onClientEvent,
   online,
@@ -8,6 +9,8 @@ import {
 import { isPublic } from "@aicore-fivem/lib/shared";
 import { EVENTS, type Channel, type ChatMessage } from "common/chat";
 import { content } from "./content";
+
+aiLogChannels({ messages: {} });
 
 /** What a message hook (cfx `registerMessageHook`) may do to a message before it goes out. */
 export interface HookRef {

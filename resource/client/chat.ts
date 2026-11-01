@@ -7,6 +7,7 @@ import {
   loadLocaleTexts,
   onMembershipChange,
 } from "@aicore-fivem/lib/client";
+import { NUI_LAYER } from "@aicore-fivem/shared";
 import { Locale } from "common";
 import {
   ChatContent,
@@ -146,3 +147,6 @@ RegisterNuiCallback("send", (data: unknown, cb: NuiReply) => {
       : (chat.channels()[0]?.id ?? "");
   emitNet(EVENTS.send, channel, text);
 });
+
+// Stacking among NUI pages (`NUI_LAYER`): set at start, not left to load order.
+SetNuiZindex(NUI_LAYER.chat);
