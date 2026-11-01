@@ -10,7 +10,10 @@ const message = {
   type: "longString",
   help: Locale("COMMAND_P_MESSAGE"),
 } as const;
-const near = (source: number) => [source, ...playersNear(source, RANGE)];
+// playersNear includes the speaker (when their ped is placed); the Set keeps them in without a second copy.
+const near = (source: number) => [
+  ...new Set([source, ...playersNear(source, RANGE)]),
+];
 // oxlint-disable-next-line no-control-regex
 const clean = (text: string) =>
   text.replace(/[\u0000-\u001f\u007f]/g, "").trim();
