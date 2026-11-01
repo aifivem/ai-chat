@@ -1,6 +1,6 @@
 {
   "name": "ai-chat",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "private": true,
   "description": "Chat with channels, command suggestions and the chat resource API",
   "license": "GPL-3.0-only",

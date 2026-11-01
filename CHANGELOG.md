@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.3](https://github.com/aifivem/ai-chat/compare/v0.1.2...v0.1.3) (2026-11-01)
+
+
+### Bug Fixes
+
+* **chat:** send /ooc and /me to the speaker once ([fa5d8a0](https://github.com/aifivem/ai-chat/commit/fa5d8a039831cac14656266aff225af83436d8f7))
+
+
+### Code Refactoring
+
+* feature folders, side entries that only import, panel schema per tab ([2b7c7cc](https://github.com/aifivem/ai-chat/commit/2b7c7ccf9fa1aaaa13e528401ce120502d283168))
+
 ## [0.1.2](https://github.com/aifivem/ai-chat/compare/v0.1.1...v0.1.2) (2026-10-31)
 
 
