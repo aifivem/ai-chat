@@ -3,8 +3,8 @@ import {
   onServerEvent,
   player,
   playerPed,
-} from "@aicore-fivem/lib/client";
-import { readId, readText } from "@aicore-fivem/lib/shared";
+} from "@aifivem/lib/client";
+import { readId, readText } from "@aifivem/lib/shared";
 import { EVENTS } from "common/chat";
 
 const SHOW_MS = 7000;

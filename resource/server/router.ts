@@ -5,8 +5,8 @@ import {
   onClientEvent,
   online,
   playersNear,
-} from "@aicore-fivem/lib/server";
-import { isPublic } from "@aicore-fivem/lib/shared";
+} from "@aifivem/lib/server";
+import { isPublic } from "@aifivem/lib/shared";
 import { EVENTS, type Channel, type ChatMessage } from "common/chat";
 import { content } from "./content";
 

@@ -1,4 +1,4 @@
-import { provideExport, registerExport } from "@aicore-fivem/lib/server";
+import { provideExport, registerExport } from "@aifivem/lib/server";
 import { toChatMessage } from "common/chat";
 import { addHook, deliver, modes, type MessageHook } from "./router";
 

@@ -1,4 +1,4 @@
-import { onClientEvent, PlayerMap } from "@aicore-fivem/lib/server";
+import { onClientEvent, PlayerMap } from "@aifivem/lib/server";
 import { EVENTS, type Suggestion } from "common/chat";
 
 /**

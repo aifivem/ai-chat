@@ -3,8 +3,8 @@ import {
   onServerEvent,
   provideExport,
   registerExport,
-} from "@aicore-fivem/lib/client";
-import { readAccess } from "@aicore-fivem/lib/shared";
+} from "@aifivem/lib/client";
+import { readAccess } from "@aifivem/lib/shared";
 import {
   EVENTS,
   toChatMessage,
