@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.5](https://github.com/aifivem/ai-chat/compare/v0.1.4...v0.1.5) (2026-11-02)
+
+
+### Documentation
+
+* install from the release zip ([8729d7d](https://github.com/aifivem/ai-chat/commit/8729d7d3fd47455b6054c1912fb6f97deddb30e0))
+
+
+### Miscellaneous Chores
+
+* build files are no longer in git, the release zip carries them ([800e5cd](https://github.com/aifivem/ai-chat/commit/800e5cd0745318062a77daeda1283ff22fec30c9))
+
 ## [0.1.4](https://github.com/aifivem/ai-chat/compare/v0.1.3...v0.1.4) (2026-11-02)
 
 
