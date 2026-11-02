@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.4](https://github.com/aifivem/ai-chat/compare/v0.1.3...v0.1.4) (2026-11-02)
+
+
+### Bug Fixes
+
+* **build:** keep the web build in dist/ so release zips have the NUI ([acad480](https://github.com/aifivem/ai-chat/commit/acad480f5f80f716f702aa74ff4609fdccf5dd31))
+
+
+### Code Refactoring
+
+* import the shared packages from [@aifivem](https://github.com/aifivem) ([3d0a15d](https://github.com/aifivem/ai-chat/commit/3d0a15d4689a2dd3696faee32f631030a7837a31))
+
 ## [0.1.3](https://github.com/aifivem/ai-chat/compare/v0.1.2...v0.1.3) (2026-11-01)
 
 
